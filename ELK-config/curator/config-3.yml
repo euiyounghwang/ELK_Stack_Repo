@@ -1,0 +1,34 @@
+---
+# We need to run elasticsearch curator based on Python v.3 for the security xpack
+elasticsearch:
+  client:
+    hosts:
+      - https://localhost:9201
+    cloud_id:
+    ca_certs: /home/biadmin/utils/curator-config-dev/root-ca.pem
+    client_cert: /home/biadmin/utils/curator-config-dev/kirk.pem
+    client_key: /home/biadmin/utils/curator-config-dev/kirk-key.pem
+    verify_certs: False
+    request_timeout: 30
+  other_settings:
+    master_only: False
+    username: "test"
+    password: "test"
+
+
+logging:
+  loglevel: INFO
+  logfile:
+  logformat: default
+  blacklist: ['elasticsearch', 'urllib3']
+
+
+  
+#2024-07-17 17:51:23,994 INFO      GET https://localhost:9201/packetbeat-2024.07.10,packetbeat-2024.07.12,packetbeat-2024.07.15/_settings [status:200 duration:0.004s]
+#2024-07-17 17:51:23,994 CRITICAL  Pre Instantiation Action kwargs: {'master_timeout': 30}
+#2024-07-17 17:51:23,994 INFO      DRY-RUN MODE.  No changes will be made.
+#2024-07-17 17:51:23,994 INFO      (CLOSED) indices may be shown that may not be acted on by action "delete_indices".
+#2024-07-17 17:51:23,994 INFO      DRY-RUN: delete_indices: packetbeat-2024.07.10 with arguments: {}
+#2024-07-17 17:51:23,994 INFO      DRY-RUN: delete_indices: packetbeat-2024.07.12 with arguments: {}
+#2024-07-17 17:51:23,994 INFO      DRY-RUN: delete_indices: packetbeat-2024.07.15 with arguments: {}
+#2024-07-17 17:51:23,994 INFO      Action ID: 1, "delete_i

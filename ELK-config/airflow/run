@@ -1,0 +1,85 @@
+
+Apache Airflow is used for the scheduling and orchestration of data pipelines or workflows. Airflow allows you to continuously perform repetitive tasks in a certain order at a desired time.
+
+# airflow db init: sqlite C library version too old (< 3.15.0) in python
+# https://ngela.tistory.com/130
+wget https://www.sqlite.org/2021/sqlite-autoconf-3340100.tar.gz
+tar xvf sqlite-autoconf-3340100.tar.gz
+cd sqlite-autoconf-3340100
+./configure
+make
+sudo make install
+ls /usr/local/lib
+sqlite3 --version
+3.41.2 2023-03-22 11:56:21 0d1fc92f94cb6b76bffe3ec34d69cffde2924203304e8ffc4155597af0c191da
+
+
+$ vi /etc/environment
+# 에 아래 줄 추가
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+$ source /etc/environment
+airfow info
+
+airflow users list 
+
+python3.9 -m pip install apache-airflow==2.2.3
+export AIRFLOW_HOME=/home/devuser/monitoring/apache_airflow
+
+airflow users list
+airflow users delete -u es_admin
+airflow users create -u es_admin -p 1 -f admin -l admin -r Admin -e admin@admin.com
+airflow db init
+
+
+airflow webserver -p 8080 -D
+airflow scheduler -D
+
+#** airflow
+00 00 * * * sudo find /home/biadmin/airflow/logs/scheduler -type d -mtime +0 -exec rm -rf {} \;
+
+
+# https://stackoverflow.com/questions/47883769/how-to-enable-ssl-on-apache-airflow
+# airflow https
+# Go to AIRFLOW_HOME -> airflow.cfg. It has section named [webserver], under that there are two config properties like below: web_server_ssl_cert = web_server_ssl_key = if there is no value like above means Airflow webserver is running on http (without certificate).
+openssl req -newkey rsa:2048 -nodes -keyout domain.key -x509 -days 365 -out airflow.crt
+
+
+'''
+To enable SSL, use .p12 certificate (one you must have ordered) and use openssl to extract certificate and private key from .p12 file. openssl mostly ships with Linux so you can directly run on linux terminal.
+
+Step1: Extract certificate using below command openssl pkcs12 -in /path/cert.p12 -nokeys -clcerts -out /path/mycert.crt
+
+Step2: Extract key using below command openssl pkcs12 -in /path/cert.p12 -nocerts -out /path/mykey.key
+
+Step3: Once certificate and key is generated, update airflow.cfg for web_server_ssl_cert and web_server_ssl_key. Restart Airflow webserver.. are you are done. Browse Airflow UI with https.
+'''
+
+# Paths to the SSL certificate and key for the web server. When both are
+# provided SSL will be enabled. This does not change the web server port.
+web_server_ssl_cert = ./certs/airflow.crt
+
+# Paths to the SSL certificate and key for the web server. When both are
+# provided SSL will be enabled. This does not change the web server port.
+web_server_ssl_key = ./certs/domain.key
+
+# --
+
+openssl x509 -in ./airflow.crt -text -noout
+openssl x509 -in ./airflow.crt -subject -noout
+openssl x509 -in ./airflow.crt -noout -dates
+
+# airflow with ssl docker : https://www.bearpooh.com/126
+
+'''
+https://airflow.apache.org/docs/apache-airflow/stable/security/webserver.html
+
+SSL can be enabled by providing a certificate and key. Once enabled, be sure to use “https://” in your browser.
+
+[webserver]
+web_server_ssl_cert = <path to cert>
+web_server_ssl_key = <path to key>
+
+'''
+
+
+

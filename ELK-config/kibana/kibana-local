@@ -1,0 +1,3034 @@
+
+GET _cat/indices
+
+GET _cluster/settings
+
+POST /_cluster/reroute
+
+# my threadpool
+GET _nodes/thread_pool
+
+# the status of thread pool
+GET _nodes/stats/thread_pool
+
+GET _nodes?filter_path=**.mlockall
+
+PUT om_receipt_10052020_20_5_1/_settings
+{
+  "settings": {
+    "index.number_of_replicas": 1
+  }
+}
+
+PUT _cluster/settings
+{
+    "transient" : {
+        "threadpool.bulk.queue_size" : 500,
+        "threadpool.search.queue_size" : 4000
+    }
+}
+
+# https://medium.com/@zoo5252/elastic-search-%EB%94%94%EC%8A%A4%ED%81%AC-%EC%9A%A9%EB%9F%89-%EC%A0%9C%ED%95%9C-55e58e51ce85
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster": {
+      "routing": {
+        "allocation": {
+          "disk": {
+            "threshold_enabled": "true",
+            "watermark": {
+              "low": "75%",
+              "high" : "85%"
+            },
+            "include_relocations": "true",
+            "reroute_interval": "60m"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster": {
+      "routing": {
+        "allocation": {
+          "disk": {
+            "threshold_enabled": null,
+            "watermark": {
+              "low": null,
+              "high" : null
+            },
+            "include_relocations": null,
+            "reroute_interval": null
+          }
+        }
+      }
+    }
+  }
+}
+
+GET _cat/indices/my*?v
+
+GET _cat/aliases
+
+GET _cat/plugins
+
+GET test
+
+DELETE test
+
+GET test/_search
+{
+  "track_total_hits": true,
+  "query": {
+    "match_all": {}
+  }
+}
+
+# ****************
+# ****************
+# ****************
+# SEARCH-591
+
+DELETE my-index-01
+
+GET my-index-01
+
+PUT my-index-01
+{
+  "mappings": {
+    "properties": {
+      "text": {
+        "type": "text",
+        "index_options": "offsets"
+      },
+      "without_text" : {
+        "type": "text"
+      },
+      "no_text" : {
+        "type": "text",
+        "index" : false
+      }
+    }
+  }
+}
+
+PUT my-index-01/_doc/1
+{
+  "text": "Quick brown fox",
+  "without_text" : "Quick brown fox",
+  "no_text" : "Quick brown fox"
+}
+
+GET my-index-01/_search
+{
+  "query": {
+    "match": {
+      "text": "brown fox"
+    }
+  },
+  "highlight": {
+    "fields": {
+      "text": {} 
+    }
+  }
+}
+
+GET my-index-01/_search
+{
+  "query": {
+    "match_phrase": {
+      "text": "quick brown"
+    }
+  },
+  "highlight": {
+    "fields": {
+      "*": {} 
+    }
+  }
+}
+
+GET my-index-01/_search
+{
+  "query": {
+    "match_phrase": {
+      "without_text": "quick brown"
+    }
+  },
+  "highlight": {
+    "fields": {
+      "*": {} 
+    }
+  }
+}
+
+
+GET my-index-01/_search
+{
+  "query": {
+    "match_phrase": {
+      "no_text": "quick brown"
+    }
+  },
+  "highlight": {
+    "fields": {
+      "*": {} 
+    }
+  }
+}
+
+GET my-index-01/_termvectors/1?fields=text
+GET my-index-01/_termvectors/1?fields=without_text
+GET my-index-01/_termvectors/1?fields=no_text
+
+# ****************
+# ****************
+# ****************
+
+
+
+POST test_bill_percolators_v1/_delete_by_query
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+GET test_bill_percolators_v1/_search
+
+PUT test_omnisearch_v1
+{
+  "settings": {
+    "number_of_shards": 50,
+    "number_of_replicas": 1,
+    "max_result_window": 50000,
+    "refresh_interval": "10s",
+    "mapping": {
+      "ignore_malformed": "true",
+      "total_fields.limit": "3000"
+    },
+    "analysis": {
+      "normalizer": {
+        "fn_string_sorting_normalizer": {
+          "type": "custom",
+          "char_filter": ["alphanum_char_filter"],
+          "filter": ["lowercase", "asciifolding"]
+        }
+      },
+      "char_filter": {
+        "alphanum_char_filter": {
+          "type": "pattern_replace",
+          "pattern": "([^A-Z0-9a-z\\s])",
+          "replacement": ""
+        }
+      },
+      "analyzer": {
+        "fn_string_analyzer_v1": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "kstem",
+            "filter_shingle",
+            "possessive",
+            "asciifolding"
+          ]
+        },
+        "fn_query_string_analyzer_v1": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "kstem",
+            "filter_shingle",
+            "possessive",
+            "asciifolding"
+          ]
+        },
+        "fn_leg_string_analyzer_v1": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "kstem",
+            "possessive",
+            "asciifolding",
+            "filter_shingle"
+          ]
+        },
+        "fn_string_analyzer_v1_english": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "kstem",
+            "possessive",
+            "asciifolding",
+            "filter_shingle"
+          ]
+        },
+        "fn_name_analyzer_v1_ascii": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "filter_shingle"
+          ]
+        },
+        "fn_standard_autocomplete": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "autocomplete_filter"
+          ]
+        },
+        "fn_phonetic": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "phonetic"
+          ]
+        }
+      },
+      "filter": {
+        "possessive": {
+          "type": "stemmer",
+          "name": "possessive_english"
+        },
+        "filter_shingle": {
+          "type": "shingle",
+          "max_shingle_size": 2,
+          "min_shingle_size": 2,
+          "output_unigrams": true
+        },
+        "autocomplete_filter": {
+          "type": "edge_ngram",
+          "min_gram": 1,
+          "max_gram": 20
+        },
+        "phonetic": {
+          "type": "phonetic",
+          "encoder": "metaphone",
+          "replace": true
+        }
+      }
+    }
+  },
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "french_strings": {
+          "mapping": {
+            "analyzer": "french",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "french"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_FR",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "french_global_headers_strings" : {
+          "path_match" : "global_headers.*_FR",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "french",
+            "index_options" : "offsets",
+            "search_analyzer" : "french",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "spanish_strings": {
+          "mapping": {
+            "analyzer": "spanish",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "spanish"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_ES",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "spanish_global_headers_strings" : {
+          "path_match" : "global_headers.*_ES",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "spanish",
+            "index_options" : "offsets",
+            "search_analyzer" : "spanish",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "german_strings": {
+          "mapping": {
+            "analyzer": "german",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "german"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_DE",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "german_global_headers_strings" : {
+          "path_match" : "global_headers.*_DE",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "german",
+            "index_options" : "offsets",
+            "search_analyzer" : "german",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "hindi_strings": {
+          "mapping": {
+            "analyzer": "hindi",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "hindi"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_HI",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "hindi_global_headers_strings" : {
+          "path_match" : "global_headers.*_HI",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "hindi",
+            "index_options" : "offsets",
+            "search_analyzer" : "hindi",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "polish_strings": {
+          "mapping": {
+            "analyzer": "polish",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "polish"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_PL",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "polish_global_headers_strings" : {
+          "path_match" : "global_headers.*_PL",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "polish",
+            "index_options" : "offsets",
+            "search_analyzer" : "polish",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "portuguese_strings": {
+          "mapping": {
+            "analyzer": "portuguese",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "portuguese"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_PT",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "portuguese_global_headers_strings" : {
+          "path_match" : "global_headers.*_PT",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "portuguese",
+            "index_options" : "offsets",
+            "search_analyzer" : "portuguese",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "russian_strings": {
+          "mapping": {
+            "analyzer": "russian",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "russian"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_RU",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "russian_global_headers_strings" : {
+          "path_match" : "global_headers.*_RU",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "russian",
+            "index_options" : "offsets",
+            "search_analyzer" : "russian",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "thai_strings": {
+          "mapping": {
+            "analyzer": "thai",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "thai"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_TH",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "thai_global_headers_strings" : {
+          "path_match" : "global_headers.*_TH",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "thai",
+            "index_options" : "offsets",
+            "search_analyzer" : "thai",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "dutch_strings": {
+          "mapping": {
+            "analyzer": "dutch",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "dutch"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_NL",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "dutch_global_headers_strings" : {
+          "path_match" : "global_headers.*_NL",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "dutch",
+            "index_options" : "offsets",
+            "search_analyzer" : "dutch",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "indonesian_strings": {
+          "mapping": {
+            "analyzer": "indonesian",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "indonesian"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_ID",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "indonesian_global_headers_strings" : {
+          "path_match" : "global_headers.*_ID",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "indonesian",
+            "index_options" : "offsets",
+            "search_analyzer" : "indonesian",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "ukrainian_strings": {
+          "mapping": {
+            "analyzer": "ukrainian",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "ukrainian"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_UK",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "ukrainian_global_headers_strings" : {
+          "path_match" : "global_headers.*_UK",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "ukrainian",
+            "index_options" : "offsets",
+            "search_analyzer" : "ukrainian",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "swedish_strings": {
+          "mapping": {
+            "analyzer": "swedish",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "swedish"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_SV",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "swedish_global_headers_strings" : {
+          "path_match" : "global_headers.*_SV",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "swedish",
+            "index_options" : "offsets",
+            "search_analyzer" : "swedish",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "korean_strings": {
+          "mapping": {
+            "analyzer": "nori",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "nori"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_KO",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "korean_global_headers_strings" : {
+          "path_match" : "global_headers.*_KO",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "nori",
+            "index_options" : "offsets",
+            "search_analyzer" : "nori",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "japanese_strings": {
+          "mapping": {
+            "analyzer": "kuromoji",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "kuromoji"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_JA",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "japanese_global_headers_strings" : {
+          "path_match" : "global_headers.*_JA",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "kuromoji",
+            "index_options" : "offsets",
+            "search_analyzer" : "kuromoji",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "finnish_strings": {
+          "mapping": {
+            "analyzer": "finnish",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "finnish"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_FI",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "finnish_global_headers_strings" : {
+          "path_match" : "global_headers.*_FI",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "finnish",
+            "index_options" : "offsets",
+            "search_analyzer" : "finnish",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "italian_strings": {
+          "mapping": {
+            "analyzer": "italian",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "italian"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_IT",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "italian_global_headers_strings" : {
+          "path_match" : "global_headers.*_IT",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "italian",
+            "index_options" : "offsets",
+            "search_analyzer" : "italian",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "norwegian_strings": {
+          "mapping": {
+            "analyzer": "norwegian",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "norwegian"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_NO",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "norwegian_global_headers_strings" : {
+          "path_match" : "global_headers.*_NO",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "norwegian",
+            "index_options" : "offsets",
+            "search_analyzer" : "norwegian",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "turkish_strings": {
+          "mapping": {
+            "analyzer": "turkish",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "turkish"
+          },
+          "path_match": "global_headers.extracted_text_blob.*_TR",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "turkish_global_headers_strings" : {
+          "path_match" : "global_headers.*_TR",
+          "match_mapping_type" : "string",
+          "mapping" : {
+            "analyzer" : "turkish",
+            "index_options" : "offsets",
+            "search_analyzer" : "turkish",
+            "similarity" : "BM25",
+            "store" : true,
+            "type" : "text"
+          }
+        }
+      },
+      {
+        "standard_strings": {
+          "mapping": {
+            "analyzer": "standard",
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "similarity": "BM25",
+            "index_options": "offsets",
+            "search_analyzer": "standard"
+          },
+          "path_match": "global_headers.extracted_text_blob.text_??",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "pattern_lookup_fields": {
+          "mapping": {
+            "type": "search_as_you_type",
+            "analyzer": "fn_string_analyzer_v1",
+            "store": true,
+            "similarity": "BM25",
+            "search_analyzer": "fn_string_analyzer_v1"
+          },
+          "path_match": "global_headers.pattern_lookup_fields.*"
+        }
+      },
+      {
+        "keyword_lookup_fields": {
+          "mapping": {
+            "type": "keyword",
+            "fields": {
+              "sort": {
+                "type": "keyword",
+                "normalizer": "fn_string_sorting_normalizer"
+              }
+            }
+          },
+          "path_match": "global_headers.keyword_lookup_fields.*"
+        }
+      },
+      {
+        "global_header_strings": {
+          "mapping": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "analyzer": "fn_string_analyzer_v1",
+                "type": "text",
+                "store": true,
+                "similarity": "BM25",
+                "search_analyzer": "fn_string_analyzer_v1"
+              },
+              "sort": {
+                "type": "keyword",
+                "normalizer": "fn_string_sorting_normalizer"
+              }
+            }
+          },
+          "path_match": "global_headers.*",
+          "match_mapping_type": "string"
+        }
+      },
+      {
+        "metabucket_strings": {
+          "mapping": {
+            "type": "keyword",
+            "fields": {
+              "analyzed": {
+                "analyzer": "fn_string_analyzer_v1",
+                "type": "text",
+                "store": true,
+                "similarity": "BM25",
+                "search_analyzer": "fn_string_analyzer_v1"
+              },
+              "sort": {
+                "type": "keyword",
+                "normalizer": "fn_string_sorting_normalizer"
+              }
+            }
+          },
+          "path_match": "meta_bucket_fields.*",
+          "match_mapping_type": "string"
+        }
+      }
+    ],
+    "properties": {
+      "doc_type": {
+        "type": "keyword"
+      },
+      "global_headers": {
+        "properties": {
+          "meta_buckets": {
+            "type": "keyword"
+          },
+          "entity_type": {
+            "type": "keyword"
+          },
+          "title" : {
+            "type" : "keyword",
+            "fields" : {
+              "analyzed" : {
+                "type" : "text",
+                "store" : true,
+                "analyzer" : "fn_string_analyzer_v1",
+                "similarity" : "BM25"
+              },
+              "sort" : {
+                "type" : "keyword",
+                "normalizer" : "fn_string_sorting_normalizer"
+              }
+            }
+          },
+          "phonetic_title": {
+            "type": "text",
+            "fields": {
+              "analyzed": {
+                "type": "text",
+                "analyzer": "fn_phonetic",
+                "store": false
+              }
+            }
+          },
+          "primary_identifier" : {
+            "type" : "keyword",
+            "fields" : {
+              "analyzed" : {
+                "type" : "text",
+                "store" : true,
+                "analyzer" : "fn_string_analyzer_v1",
+                "similarity" : "BM25"
+              },
+              "sort" : {
+                "type" : "keyword",
+                "normalizer" : "fn_string_sorting_normalizer"
+              }
+            }
+          },
+          "description": {
+            "type": "text",
+            "store": true,
+            "term_vector": "with_positions_offsets",
+            "analyzer": "fn_leg_string_analyzer_v1",
+            "similarity": "BM25"
+          },
+          "generic_date": {
+            "type": "date"
+          },
+          "locale": {
+            "type": "object",
+            "properties": {
+              "country_code": {
+                "type": "keyword"
+              },
+              "locality_code": {
+                "type": "keyword"
+              }
+            }
+          },
+          "pattern_lookup_fields": {
+            "type": "object"
+          },
+          "extracted_text_blob": {
+            "type": "nested",
+            "properties": {
+              "document_id": {
+                "type": "keyword"
+              },
+              "document_url": {
+                "type": "keyword"
+              },
+              "title_EN": {
+                "type": "text",
+                "store": true,
+                "term_vector": "with_positions_offsets",
+                "analyzer": "fn_leg_string_analyzer_v1",
+                "similarity": "BM25"
+              },
+              "text_EN": {
+                "type": "text",
+                "store": true,
+                "term_vector": "with_positions_offsets",
+                "analyzer": "fn_leg_string_analyzer_v1",
+                "similarity": "BM25"
+              }
+            }
+          },
+          "product_entity_type": {
+            "type": "keyword"
+          },
+          "initial_date": {
+            "type": "date"
+          },
+          "last_update_date": {
+            "type": "date"
+          }
+        }
+      },
+      "meta_bucket_fields": {
+        "type": "object",
+        "properties": {
+          "regulation": {
+            "type": "object",
+            "properties": {
+              "document_count": {
+                "type": "long"
+              }
+            }
+          }
+        }
+      },
+      "entity_specific_fields": {
+        "type": "flattened"
+      },
+      "metadata_fields": {
+        "properties": {
+          "entity_id": {
+            "type": "keyword"
+          },
+          "bees_entity_type": {
+            "type": "keyword"
+          },
+          "indexed_at": {
+            "type": "date"
+          },
+          "scope": {
+            "type": "keyword"
+          },
+          "source": {
+            "type": "keyword"
+          },
+          "source_id": {
+            "type": "keyword"
+          }
+        }
+      },
+      "fn_data_science_fields": {
+        "properties": {
+          "fn_topics": {
+            "type": "nested",
+            "properties": {
+              "additional_scores": {
+                "dynamic": "true",
+                "properties": {
+                  "no_child_score": {
+                    "type": "float"
+                  },
+                  "norm_score": {
+                    "type": "float"
+                  }
+                }
+              },
+              "normalized_score": {
+                "type": "float"
+              },
+              "score": {
+                "type": "float"
+              },
+              "topic_id": {
+                "type": "keyword"
+              },
+              "topic_name": {
+                "type": "keyword"
+              }
+            }
+          },
+          "key_terms": {
+            "type": "object",
+            "enabled": false
+          },
+          "extracted_entities": {
+            "type": "nested",
+            "properties": {
+              "entity_type": {
+                "type": "keyword"
+              },
+              "entity_id": {
+                "type": "keyword"
+              },
+              "score": {
+                "type": "float"
+              },
+              "metadata": {
+                "type": "object",
+                "enabled": false
+              }
+            }
+          }
+        }
+      },
+      "inbox_join": {
+        "type": "join",
+        "relations": {
+          "parent_entity": "inbox_entry"
+        }
+      },
+      "inbox_entry": {
+        "properties": {
+          "inbox_id": {
+            "type": "integer"
+          },
+          "entity_type": {
+            "type": "keyword"
+          },
+          "entity_id": {
+            "type": "keyword"
+          },
+          "added_to_inbox_date": {
+            "type": "date"
+          },
+          "is_read": {
+            "type": "boolean"
+          },
+          "is_irrelevant": {
+            "type": "boolean"
+          },
+          "is_watchlisted": {
+            "type": "boolean"
+          },
+          "is_notified": {
+            "type": "boolean"
+          },
+          "inbox_relevance": {
+            "type": "double"
+          },
+          "percolator_ids": {
+            "type": "integer"
+          }
+        }
+      },
+      "percolators": {
+        "type": "nested",
+        "properties": {
+          "percolator_id": {
+            "type": "integer"
+          },
+          "percolator_relevance": {
+            "type": "double"
+          },
+          "highlights": {
+            "properties": {
+              "document_id": {
+                "type": "keyword"
+              },
+              "field": {
+                "type": "keyword"
+              },
+              "highlight_strings": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+GET test_bill_percolators_v1/_search
+{
+  "size": 50000,
+  "stored_fields": [
+    "_id"
+  ],
+  "query": {
+    "percolate": {
+      "field": "query",
+      "index": "bills",
+      "id": "222"
+    }
+  }
+}
+
+
+GET test_bill_percolators_v1/_search
+
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "test_omnisearch_v1",
+        "alias": "omnisearch_search"
+      }
+    },
+    {
+      "add": {
+        "index": "test_omnisearch_v1",
+        "alias": "omnisearch_service"
+      }
+    }
+  ]
+}
+
+
+POST _aliases
+{
+  "actions": [
+    {
+      "remove": {
+        "index": "test_omnisearch_v1",
+        "alias": "omnisearch_service"
+      }
+    }
+  ]
+}
+
+GET _search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+GET omnisearch_service/_search
+{
+  "data_params": {
+    "omni_search": {
+      "oas_query": {
+        "query_string": "the",
+        "metabuckets_filter": [
+          "legislation",
+          "regulation",
+          "report"
+        ],
+        "size": 10,
+        "term_filters": [
+          {
+            "values": [
+              "AU",
+              "IN",
+              "ID",
+              "TH",
+              "DE",
+              "CH",
+              "GB",
+              "FR",
+              "EU",
+              "UA",
+              "RU",
+              "SE",
+              "NL",
+              "CA",
+              "MX",
+              "AR",
+              "CL",
+              "BR",
+              "PE",
+              "CO",
+              "JP",
+              "US-DC",
+              "US-AL",
+              "US-AK",
+              "US-AZ",
+              "US-AR",
+              "US-CA",
+              "US-CO",
+              "US-CT",
+              "US-DE",
+              "US-FL",
+              "US-GA",
+              "US-HI",
+              "US-ID",
+              "US-IL",
+              "US-IN",
+              "US-IA",
+              "US-KS",
+              "US-KY",
+              "US-LA",
+              "US-ME",
+              "US-MD",
+              "US-MA",
+              "US-MI",
+              "US-MN",
+              "US-MS",
+              "US-MO",
+              "US-MT",
+              "US-NE",
+              "US-NV",
+              "US-NH",
+              "US-NJ",
+              "US-NM",
+              "US-NY",
+              "US-NC",
+              "US-ND",
+              "US-OH",
+              "US-OK",
+              "US-OR",
+              "US-PA",
+              "US-RI",
+              "US-SC",
+              "US-SD",
+              "US-TN",
+              "US-TX",
+              "US-UT",
+              "US-VT",
+              "US-VA",
+              "US-WA",
+              "US-WV",
+              "US-WI",
+              "US-WY",
+              "US"
+            ],
+            "fieldname": "global_headers.locale.locality_code"
+          }
+        ],
+        "source_field_level": "ALL"
+      }
+    }
+  },
+  "entity_types": [
+    "OMNISEARCH"
+  ],
+  "id": 11400,
+  "name": "the"
+}
+
+GET test_bill_percolators_v1
+
+# SEARCH-633
+GET omnisearch_service/_search
+{
+  "query": {
+    "bool": {
+      "filter": [],
+      "should": [],
+      "must": [
+        {
+          "bool": {
+            "minimum_should_match": 1,
+            "should": [
+              {
+                "query_string": {
+                  "fields": [
+                    "title^5",
+                    "summary^2"
+                  ],
+                  "default_operator": "AND",
+                  "analyzer": "fn_query_string_analyzer_v1",
+                  "query": """("cryptocurrency regulation"~5)"""
+                }
+              },
+              {
+                "nested": {
+                  "path": "versions",
+                  "query": {
+                    "query_string": {
+                      "fields": [
+                        "versions.extracted_text"
+                      ],
+                      "default_operator": "AND",
+                      "analyzer": "fn_query_string_analyzer_v1",
+                      "query": """("cryptocurrency regulation"~5)"""
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "terms": {
+            "locality": [
+              "us"
+            ]
+          }
+        },
+        {
+          "terms": {
+            "bill_type": [
+              "BILL",
+              "RESOLUTION",
+              "CONSTITUTIONAL_AMENDMENT",
+              "MEMORIAL",
+              "JOINT_MEMORIAL",
+              "AMENDMENT",
+              "JOINT_RESOLUTION",
+              "CONCURRENT_RESOLUTION"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+
+GET omnisearch_percolators/_search
+
+
+# ****************
+# ****************
+# ****************
+# SEARCH-554
+# ILM roll over with index_template
+
+# default : 10 minutes
+PUT _cluster/settings
+{
+  "transient": {
+    "indices.lifecycle.poll_interval" : "5s"
+  }
+}
+
+GET _cluster/settings
+
+DELETE _ilm/policy/omnisearch_highlight_policy
+
+# policy
+# max_primary_shard_size
+# hot : 15d, colde : 15d, delete : 1d (evenry 15d create new index)
+PUT /_ilm/policy/omnisearch_highlight_policy
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "actions": {
+          "rollover": {
+            "max_size": "50GB",
+            "max_age": "15d"
+          }
+        }
+      },
+      "cold": {
+        "min_age": "15d",
+        "actions": {}
+      },
+      "delete": {
+        "min_age": "1d",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}
+
+# test
+PUT /_ilm/policy/omnisearch_highlight_policy
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "actions": {
+          "rollover": {
+            "max_size": "5GB",
+            "max_docs": 5,
+            "max_age": "15d"
+          }
+        }
+      },
+      "cold": {
+        "min_age": "0d",
+        "actions": {}
+      },
+      "delete": {
+        "min_age": "5m",
+        "actions": {
+          "delete": {
+            "delete_searchable_snapshot": true
+          }
+        }
+      }
+    }
+  }
+}
+
+GET _ilm/policy/
+
+GET _template
+
+DELETE omnisearch_highlight_v2-*
+
+DELETE _index_template/rolling
+
+# need to update the alias
+PUT _index_template/rolling
+{
+  "index_patterns": [
+    "omnisearch_highlight_v*"
+  ],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.lifecycle.name": "omnisearch_highlight_policy",
+      "index.lifecycle.rollover_alias": "rolling-write-index",
+      "analysis": {
+        "analyzer": {
+          "test_analyzer": {
+            "filter": [
+              "lowercase",
+              "stop",
+              "snowball"
+            ],
+            "char_filter": [
+              "test_char_filter"
+            ],
+            "tokenizer": "whitespace"
+          }
+        },
+        "char_filter": {
+          "test_char_filter": {
+            "type": "mapping",
+            "mappings": [
+              "+ => _plus_",
+              "- => _minus_"
+            ]
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "my_keyword_field": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
+
+
+# different index
+PUT _bulk
+{"index":{"_index":"test_set"}}
+{"my_keyword_field": "man"}
+
+
+PUT _bulk
+{"index":{"_index":"rolling-write-index"}}
+{"my_keyword_field": "man"}
+
+
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "test_set*",
+        "alias": "rolling-write-index"
+      }
+    }
+  ]
+}
+
+GET _cat/indices
+
+GET _cat/aliases
+
+DELETE omnisearch_highlight_v10
+DELETE omnisearch_highlight_v2-000001
+
+GET _cat/indices
+
+
+POST _reindex?wait_for_completion=false
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "test_set",
+    "query": {
+      "bool": {
+        "must_not": [
+          {
+            "exists": {
+              "field": "query"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "dest": {
+    "index": "omnisearch_highlight_v2-000001",
+    "op_type": "create"
+  }
+}
+
+GET omnisearch_highlight_v2-000001
+
+GET _cat/aliases
+
+GET _cat/indices
+
+GET bills_percolators/_doc/222
+GET bills_percolators/_search
+
+GET omnisearch_highlight_v2-000001
+GET omnisearch_highlight_v2-000002
+GET omnisearch_highlight_v2-000001/_ilm/explain
+GET omnisearch_highlight_v2-000002/_ilm/explain
+
+GET omnisearch_highlight_v2-*/_search
+{
+  "track_total_hits": true, 
+  "query": {
+    "match_all": {}
+  }
+}
+
+GET _cat/aliases
+
+GET _cat/indices
+
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "test_bill_percolators_v1",
+        "alias": "bills"
+      }
+    }
+  ]
+}
+
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "omnisearch_highlight_v2-000001",
+        "alias": "rolling-write-index",
+        "is_write_index" : true
+      }
+    }
+  ]
+}
+
+GET omnisearch_highlight_v2-000002
+GET omnisearch_highlight_v2-000002/_ilm/explain
+
+GET _cat/indices
+
+DELETE omnisearch_highlight_v2*
+
+
+GET _cat/nodeattrs?v&h=host,attr,value
+
+GET _cat/shards?index=rolling-test_v2*
+
+GET _cat/shards?v=true&h=index,shard,prirep,state,node,unassigned.reason&s=state
+
+GET omnisearch_highlight_v2-000001
+
+# need to add the alias
+PUT omnisearch_highlight_v2-000001
+{
+  "aliases": {
+    "rolling-write-index": {
+      "is_write_index": true
+    }
+  }
+}
+
+GET omnisearch_highlight_v2-000001
+GET omnisearch_highlight_v2-000001/_ilm/explain
+GET omnisearch_highlight_v2-000001/_search
+
+GET omnisearch_highlight_v2-000002
+
+GET test_set/_search
+
+#****************************
+
+DELETE my-index-000001
+
+PUT /my-index-000001
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "metabucket_strings": {
+          "match_mapping_type": "string",
+          "mapping": {
+            "type": "keyword"
+          }
+        }
+      }
+    ],
+    "properties": {
+      "message": {
+        "type": "text"
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1?refresh
+{
+  "message": "bonsai tree",
+  "test" : "1"
+}
+
+
+GET /my-index-000001/_search
+
+DELETE my-percolators
+
+PUT /my-percolators
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "metabucket_strings": {
+          "match_mapping_type": "string",
+          "mapping": {
+            "type": "keyword"
+          }
+        }
+      }
+    ],
+    "properties": {
+      "query": {
+        "type": "percolator"
+      }
+    }
+  }
+}
+
+GET my-percolators/_search
+
+GET /my-index-000001
+
+PUT my-percolators/_doc/1?refresh
+{
+  "query": {
+    "match": {
+      "message": "bonsai tree"
+    }
+  }
+}
+
+GET my-percolators/_search
+{
+  "query": {
+    "percolate": {
+      "field": "query",
+      "index": "my-index-000001",
+      "type": "_doc",
+      "id": "1"
+    }
+  }
+}
+
+GET /my-index-000001/_search
+{
+  "query": {
+    "percolate": {
+      "field": "query",
+      "document": {
+        "message": "A new bonsai tree in the office"
+      }
+    }
+  }
+}
+
+GET /my-index-000001/_search
+{
+  "query": {
+    "percolate": {
+      "field": "query",
+       "index": "test_set",
+       "id": "-1px5IUBU2azzNAT4keC"
+    }
+  }
+}
+
+GET my-index-000001/_search
+
+PUT /my-index-000002
+{
+  "mappings": {
+    "properties": {
+      "query": {
+        "type": "percolator"
+      }
+    }
+  }
+}
+
+
+POST _reindex?wait_for_completion=true
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "my-index-000001",
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "exists": {
+              "field": "query"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "dest": {
+    "index": "my-index-000002",
+    "op_type": "create"
+  }
+}
+
+GET my-index-000002/_search
+
+GET my-index-000001
+
+
+GET _cat/indices
+
+GET rolling-write-index/_search
+{
+  "track_total_hits": true
+}
+
+#***********************
+
+
+#***********************
+# SEARCH-631
+
+# Disable to allocate shards
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster.routing.allocation.enable": "primaries"
+  }
+}
+
+# Flush after stopping the indexing
+POST _flush/synced
+
+GET _cluster/health?pretty
+
+# elasticsearch 7.X : shard re-allocation
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster.routing.allocation.enable": null
+  }
+}
+
+
+#***********************
+
+GET omnisearch_highlight_v2-000003/_search
+
+GET rolling-write-index/_search
+{
+  "track_total_hits": true
+}
+
+GET rolling-test_v2-000001/_search
+
+GET rolling-test-000001/_ilm/explain
+
+GET rolling-test-v2-000002
+GET rolling-test-v2-000002/_search
+
+
+# manually _rollover api to create new index
+POST rolling-write-index/_rollover
+{
+  "conditions": {
+    "max_age":   "7d",
+    "max_docs":  5
+  }
+}
+
+GET rolling-test-000001/_search
+GET rolling-test-000002/_search
+
+
+
+
+
+### Create Shell script for running/stopping the instance of Elasticsearch
+```bash 
+$ echo 'bin/elasticsearch -d -p es.pid' > start.sh
+$ echo 'kill `cat es.pid`' > stop.sh
+$ chmod 755 start.sh stop.sh
+```
+
+### The option for running the instance of Elasticsearch
+```bash 
+$ bin/elasticsearch -E cluster.name=my-cluster -E node.name="node-1"
+```
+
+### CRUD in Elasticsearch
+```bash 
+#--- index, create, update, delete
+
+POST _bulk
+{"index":{"_index":"test", "_id":"1"}}
+{"field":"value one"}
+{"index":{"_index":"test", "_id":"2"}}
+{"field":"value two"}
+{"delete":{"_index":"test", "_id":"2"}}
+{"create":{"_index":"test", "_id":"3"}}
+{"field":"value three"}
+{"update":{"_index":"test", "_id":"1"}}
+{"doc":{"field":"value two"}}
+
+# Bulk json using file
+$ curl -XPOST "http://localhost:9200/_bulk" -H 'Content-Type: application/json' --data-binary @bulk.json
+
+
+POST _bulk
+{ "index": { "_index": "my-index-b", "_id" : "1"} }
+{ "field1": "value1" }
+
+POST _bulk
+{ "update": { "_index": "my-index-b", "_id": "1" } }
+{ "doc": { "field1": "value1" }, "doc_as_upsert": true }
+#--- upsert, doc_as_upsert, script, params
+
+POST my-index-b/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+#--
+DELETE logs-debug
+PUT logs-debug
+{
+  "mappings": {
+    "properties": {
+      "@timestamp": {
+        "type": "date"
+      },
+      "message": {
+        "type": "text"
+      },
+      "level": {
+        "type": "constant_keyword",
+        "value": "debug"
+      }
+    }
+  }
+}
+
+POST logs-debug/_doc
+{
+  "date": "2019-12-12",
+  "message": "Starting up Elasticsearch",
+  "type": "log",
+  "level": "debug"
+}
+
+POST logs-debug/_doc
+{
+  "date": "2019-12-12",
+  "type": "log1",
+  "message": "Starting up Elasticsearch"
+}
+
+POST logs-debug/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+POST logs-debug/_update_by_query
+{
+  "script": {
+    "source": "ctx._source['update'] = 'test'"
+  },
+  "query": {
+    "term": {
+      "type.keyword": "log1"
+    }
+  }
+}
+```
+
+
+### Join in Elasticsearch
+```bash 
+
+DELETE my_index
+
+PUT my_index
+{
+  "mappings": {
+      "properties": {
+        "acl_join_field": { 
+          "type": "join",
+          "relations": {
+            "parent": "child" 
+          }
+        }
+    }
+  }
+}
+
+
+# parent index
+PUT _bulk
+{"index":{"_index":"my_index","_id":"1"}}
+{"text":"This is a question","acl_join_field":{"name":"parent"}}
+
+
+# child index
+PUT _bulk?routing=1&refresh
+{"index":{"_index":"my_index","_id":"3"}}
+{"text":"This is a child","authz":["1","2"], "acl_join_field":{"name":"child","parent":"1"}}
+
+
+GET my_index
+GET my_index/_search
+
+GET _cat/indices
+
+GET my_index/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "has_child": {
+            "type": "child",
+            "query": {
+              "terms": {
+                "authz": [
+                  "1",
+                  "100"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+
+### reindex in Elasticsearch
+- The new cluster doesn’t have to start fully-scaled out. As you migrate indices and shift the load to the new cluster, you can add nodes to the new cluster and remove nodes from the old one.
+- Create an index with the appropriate mappings and settings. Set the refresh_interval to -1 and set number_of_replicas to 0 for faster reindexing.
+
+```bash 
+# - reindex.remote.whitelist="192.168.68.1:*,host.docker.internal:*,localhost:*"
+
+# "refresh_interval" : "1s"
+PUT test-000001/_settings
+{
+  "index" : {
+    "number_of_replicas" : 0,
+    "refresh_interval" : -1
+  }
+}
+
+
+POST _reindex?wait_for_completion=false
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "test_set",
+    "query": {
+      "bool": {
+        "must_not": [
+          {
+            "exists": {
+              "field": "query"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "dest": {
+    "index": "test-000001",
+    "op_type": "create"
+  }
+}
+
+POST _reindex?wait_for_completion=true
+{
+  "source": {
+    "remote": {
+      "host": "http://host.docker.internal:9209",
+      "username": "elastic",
+      "password": "your_password"
+    },
+    "index": "performance_metrics",
+    "query": {
+     "match_all": {}
+    }
+  },
+  "dest": {
+    "index": "cp99_performance_metrics"
+  }
+}
+
+GET _cat/indices
+
+GET _tasks?detailed=true&actions=*reindex
+
+GET _tasks/BH_UUNP2RjafE0aNHGi_Hw:216731707
+```
+
+### Configuration
+```bash 
+
+#--
+# configuration
+# default 1 second
+PUT my_index
+{
+  "settings": {
+    "refresh_interval": "30s"
+  }
+}
+
+# search_analyzer, analyzer
+# normalizer : Elasticsearch normalizers are a crucial component in the text analysis process, specifically when dealing with keyword fields
+PUT blogs
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "engram_a": {
+          "tokenizer": "standard",
+          "filter": [ "lowercase", "engram_f" ]
+        }
+      },
+      "filter": {
+        "engram_f": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 5
+        }
+      },
+      "normalizer": {
+        "norm_low": {
+          "type": "custom",
+          "filter": [ "lowercase", "asciifolding" ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "normalizer": "norm_low"
+          }
+        }
+      },
+      "author": {
+        "type": "text",
+        "analyzer": "engram_a",
+        "search_analyzer": "standard",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "synopsis": {
+        "type": "text",
+        "fielddata": true
+      },
+      "category": {
+        "type": "keyword"
+      },
+      "content": {
+        "type": "text",
+        "index": false
+      }
+    }
+  }
+}
+
+POST blogs/_analyze
+{
+  "normalizer": "norm_low",
+  "text": "2 Quick Foxes."
+}
+```
+
+
+### ILM in Elasticsearch
+- You can configure index lifecycle management (ILM) policies to automatically manage indices according to your performance, resiliency, and retention requirements
+- Spin up a new index when an index reaches a certain size or number of documents
+- Create a new index each day, week, or month and archive previous ones
+- Delete stale indices to enforce data retention standards
+
+```bash 
+# test
+PUT /_ilm/policy/omnisearch_highlight_policy
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "actions": {
+          "rollover": {
+            "max_size": "5GB",
+            "max_docs": 2,
+            "max_age": "15d"
+          }
+        }
+      },
+      "cold": {
+        "min_age": "0m",
+        "actions": {}
+      },
+      "delete": {
+        "min_age": "5m",
+        "actions": {
+          "delete": {
+            "delete_searchable_snapshot": true
+          }
+        }
+      }
+    }
+  }
+}
+
+
+# need to update the alias
+PUT _index_template/rolling
+{
+  "index_patterns": [
+    "omnisearch_highlight_v*"
+  ],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.lifecycle.name": "omnisearch_highlight_policy",
+      "index.lifecycle.rollover_alias": "rolling-write-index",
+      "analysis": {
+        "analyzer": {
+          "test_analyzer": {
+            "filter": [
+              "lowercase",
+              "stop",
+              "snowball"
+            ],
+            "char_filter": [
+              "test_char_filter"
+            ],
+            "tokenizer": "whitespace"
+          }
+        },
+        "char_filter": {
+          "test_char_filter": {
+            "type": "mapping",
+            "mappings": [
+              "+ => _plus_",
+              "- => _minus_"
+            ]
+          }
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "my_keyword_field": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
+
+
+# different index
+PUT _bulk
+{"index":{"_index":"test_set"}}
+{"my_keyword_field": "man"}
+
+
+
+GET omnisearch_highlight_v2-000001
+GET omnisearch_highlight_v2-000001/_ilm/explain
+
+
+GET omnisearch_highlight_v2-*/_search
+{
+  "track_total_hits": true, 
+  "query": {
+    "match_all": {}
+  },
+  "size": 200
+}
+
+GET _cat/aliases
+
+
+# ilm alias
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "omnisearch_highlight_v2-000001",
+        "alias": "rolling-write-index"
+      }
+    }
+  ]
+}
+
+
+PUT _bulk
+{"index":{"_index":"rolling-write-index"}}
+{"my_keyword_field": "man"}
+
+
+
+GET omnisearch_highlight_v2-000002
+GET omnisearch_highlight_v2-000002/_ilm/explain
+
+GET omnisearch_highlight_v2-000003
+
+GET _cat/indices?v
+
+GET myindex-create-from-curator2/_settings
+GET myindex-create-from-curator2/_mapping
+
+
+
+
+### snapshot in Elasticsearch
+
+
+GET test
+
+# register snapshot
+PUT /_snapshot/my_backup
+{
+  "type": "fs",
+  "settings": {
+    "compress": true,
+    "location": "/usr/share/elasticsearch/backup"
+  }
+}
+
+GET /_snapshot/my_backup
+
+
+POST my_index/_bulk
+{"index":{"_id":12}}
+{"message":"The quick brown fox"}
+
+GET my_index/_search
+
+POST my_index_restored/_close
+POST my_index_restored/_open
+GET my_index_restored/_search
+
+
+# take a snapshot
+PUT /_snapshot/my_backup/backup_20240326?wait_for_completion=true
+{
+  "indices": "my_index",
+  "ignore_unavailable": true,
+  "include_global_state": true
+}
+
+DELETE _snapshot/my_backup/backup_20240326
+
+GET /_snapshot/my_backup/backup_20240326
+GET /_snapshot/my_backup/backup_20240326/_status
+
+# Increment : my_index_restored/_closed -> run
+POST _snapshot/my_backup/backup_20240326/_restore
+{
+  "indices": "my_index",
+   "ignore_unavailable": true,
+  "include_global_state": false,              
+  "rename_pattern": "(.+)",
+  "rename_replacement": "$1_restored",
+  "include_aliases": false
+}
+
+
+
+### Search in Elasticsearch
+
+# --
+POST my_index/_bulk
+{"index":{"_id":1}}
+{"message":"The quick brown fox"}
+{"index":{"_id":2}}
+{"message":"The quick brown fox jumps over the lazy dog"}
+{"index":{"_id":3}}
+{"message":"The quick brown fox jumps over the quick dog"}
+{"index":{"_id":4}}
+{"message":"Brown fox brown dog"}
+{"index":{"_id":5}}
+{"message":"Lazy jumping dog"}
+
+
+GET my_index/_search
+{
+  "query": {
+    "match": {
+      "message": {
+        "query": "quick dog",
+        "operator": "and"
+      }
+    }
+  },
+  "highlight": {
+    "require_field_match": true,
+    "order": "score",
+    "pre_tags": [
+      "<b>"
+    ],
+    "post_tags": [
+      "</b>"
+    ],
+    "fields": {
+      "*": {
+        "number_of_fragments": 1,
+        "type": "plain",
+        "fragment_size": 150
+      }
+    }
+  }
+}
+
+
+GET my_index/_search
+{
+  "query": {
+    "match_phrase": {
+      "message": {
+        "query": "lazy dog",
+        "slop": 1
+      }
+    }
+  }
+}
+
+### Analyze
+GET _analyze
+{
+  "text": "The quick brown fox jumps over the lazy dog",
+  "tokenizer": "whitespace",
+  "filter": [
+    "lowercase",
+    "stop",
+    "snowball"
+  ]
+}
+
+# same result with lowercase, stop token filter
+GET _analyze
+{
+  "text": "The quick brown fox jumps over the lazy dog",
+  "analyzer": "snowball"
+}
+
+GET my_index2
+
+PUT my_index2
+{
+  "mappings": {
+    "properties": {
+      "message": {
+        "type": "text",
+        "analyzer": "snowball"
+      }
+    }
+  }
+}
+
+PUT my_index2/_doc/1
+{
+  "message": "The quick brown fox jumps over the lazy dog"
+}
+
+
+GET my_index2/_search
+{
+  "query": {
+    "match": {
+      "message": "jumping"
+    }
+  }
+}
+
+# Cheeck termvectors
+GET my_index2/_termvectors/1?fields=message
+
+
+
+DELETE my_index3
+
+PUT my_index3
+{
+  "settings": {
+    "index": {
+      "analysis": {
+        "analyzer": {
+          "my_custom_analyzer": {
+            "type": "custom",
+            "tokenizer": "whitespace",
+            "filter": [
+              "lowercase",
+              "my_stop_filter",
+              "snowball"
+            ]
+          }
+        },
+        "filter": {
+          "my_stop_filter": {
+            "type": "stop",
+            "stopwords": [
+              "brown"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
+
+GET my_index3/_analyze
+{
+  "analyzer": "my_custom_analyzer",
+  "text": [
+    "The quick brown fox jumps over the lazy dog"
+  ]
+}
+
+
+# character filter
+POST _analyze
+{
+  "tokenizer": "keyword",
+  "char_filter": [
+    "html_strip"
+  ],
+  "text": "<p>I&apos;m so <b>happy</b>!</p>"
+}
+
+PUT coding
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "coding_analyzer": {
+          "char_filter": [
+            "cpp_char_filter"
+          ],
+          "tokenizer": "whitespace",
+          "filter": [ "lowercase", "stop", "snowball" ]
+        }
+      },
+      "char_filter": {
+        "cpp_char_filter": {
+          "type": "mapping",
+          "mappings": [ "+ => _plus_", "- => _minus_" ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "language": {
+        "type": "text",
+        "analyzer": "coding_analyzer"
+      }
+    }
+  }
+}
+
+POST coding/_bulk
+{"index":{"_id":"1"}}
+{"language":"Java"}
+{"index":{"_id":"2"}}
+{"language":"C"}
+{"index":{"_id":"3"}}
+{"language":"C++"}
+
+GET coding/_termvectors/3?fields=language
+
+GET coding/_search
+{
+  "query": {
+    "match": {
+      "language": "C++"
+    }
+  }
+}
+
+
+# tokenizer
+GET _analyze
+{
+  "tokenizer": "standard",
+  "text": "THE quick.brown_FOx jumped! @ 3.5 meters."
+}
+
+GET _analyze
+{
+  "tokenizer": "standard",
+  "text": "email address is my-name@email.com and website is https://www.elastic.co"
+}
+
+# token filter
+GET _analyze
+{
+  "filter": [ "lowercase" ],
+  "text": [ "Harry Potter and the Philosopher's Stone" ]
+}
+
+# add stop filter
+PUT my_stop
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "my_stop_filter": {
+          "type": "stop",
+          "stopwords_path": "user_dic/my_stop_dic.txt"
+        }
+      }
+    }
+  }
+}
+
+GET my_stop/_analyze
+{
+  "tokenizer": "whitespace",
+  "filter": [
+    "lowercase",
+    "my_stop_filter"
+  ],
+  "text": [ "Around the World in Eighty Days" ]
+}
+
+GET _analyze
+{
+  "tokenizer": "standard",
+  "filter": [
+    "lowercase",
+    "unique"
+  ],
+  "text": [
+    "white fox, white rabbit, white bear"
+  ]
+}
+
+
+### nGram/Edge
+DELETE my_ngram
+
+PUT my_ngram
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "my_ngram_f": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 3
+        }
+      }
+    }
+  }
+}
+
+GET my_ngram/_analyze
+{
+  "tokenizer": "keyword",
+  "filter": [
+    "my_ngram_f"
+  ],
+  "text": "house"
+}
+
+PUT my_shingle
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "my_shingle_f": {
+          "type": "shingle",
+          "min_shingle_size": 3,
+          "max_shingle_size": 4
+        }
+      }
+    }
+  }
+}
+
+GET my_shingle/_analyze
+{
+  "tokenizer": "whitespace",
+  "filter": [
+    "my_shingle_f"
+  ],
+  "text": "this is my sweet home"
+}
+
+PUT my-index-000001
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "my_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "my_tokenizer": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 10,
+          "token_chars": [
+            "letter",
+            "digit"
+          ]
+        }
+      }
+    }
+  }
+}
+
+POST my-index-000001/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "2 Quick Foxes."
+}
+
+### Aggregations
+# -- 
+# aggregation
+
+GET my_stations
+
+PUT my_stations/_bulk
+{"index": {"_id": "1"}}
+{"date": "2019-06-01", "line": "1호선", "station": "종각", "passangers": 2314}
+{"index": {"_id": "2"}}
+{"date": "2019-06-01", "line": "2호선", "station": "강남", "passangers": 5412}
+{"index": {"_id": "3"}}
+{"date": "2019-07-10", "line": "2호선", "station": "강남", "passangers": 6221}
+{"index": {"_id": "4"}}
+{"date": "2019-07-15", "line": "2호선", "station": "강남", "passangers": 6478}
+{"index": {"_id": "5"}}
+{"date": "2019-08-07", "line": "2호선", "station": "강남", "passangers": 5821}
+{"index": {"_id": "6"}}
+{"date": "2019-08-18", "line": "2호선", "station": "강남", "passangers": 5724}
+{"index": {"_id": "7"}}
+{"date": "2019-09-02", "line": "2호선", "station": "신촌", "passangers": 3912}
+{"index": {"_id": "8"}}
+{"date": "2019-09-11", "line": "3호선", "station": "양재", "passangers": 4121}
+{"index": {"_id": "9"}}
+{"date": "2019-09-20", "line": "3호선", "station": "홍제", "passangers": 1021}
+{"index": {"_id": "10"}}
+{"date": "2019-10-01", "line": "3호선", "station": "불광", "passangers": 971}
+
+
+GET my_stations/_search
+{
+  "size": 0,
+  "aggs": {
+    "all_passangers": {
+      "sum": {
+        "field": "passangers"
+      }
+    }
+  }
+}
+
+GET my_stations/_search
+{
+  "query": {
+    "match": {
+      "station": "불광"
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "gangnam_passangers": {
+      "sum": {
+        "field": "passangers"
+      }
+    }
+  }
+}
+
+
+GET my_stations/_search
+{
+  "size": 0, 
+  "aggs": {
+    "passangers_stats": {
+      "stats": {
+        "field": "passangers"
+      }
+    }
+  }
+}
+
+GET my_stations/_search
+{
+  "size": 0,
+  "aggs": {
+    "uniq_lines": {
+      "cardinality": {
+        "field": "line.keyword"
+      }
+    }
+  }
+}
+
+GET my_stations/_search
+{
+  "size": 0,
+  "aggs": {
+    "pass_percentiles": {
+      "percentiles": {
+        "field": "passangers",
+        "percents": [ 20, 60, 80 ]
+      }
+    }
+  }
+}
+
+
+GET my_stations/_search
+{
+  "size": 0,
+  "aggs": {
+    "passangers_range": {
+      "range": {
+        "field": "passangers",
+        "ranges": [
+          {
+            "to": 1000
+          },
+          {
+            "from": 1000,
+            "to": 4000
+          },
+          {
+            "from": 4000
+          }
+        ]
+      }
+    }
+  }
+}
+
+
+GET my_stations/_search
+{
+  "size": 0,
+  "aggs": {
+    "passangers_his": {
+      "histogram": {
+        "field": "passangers",
+        "interval": 2000
+      }
+    }
+  }
+}
+
+GET my_stations/_search
+{
+  "size": 0,
+  "aggs": {
+    "date_his": {
+      "date_histogram": {
+        "field": "date",
+        "calendar_interval": "month"
+      }
+    }
+  }
+}
+
+GET my_stations/_search
+{
+  "size": 0,
+  "aggs": {
+    "stations": {
+      "terms": {
+        "field": "station.keyword"
+      }
+    }
+  }
+}
+
+GET my_stations/_search
+{
+  "size": 0,
+  "aggs": {
+    "stations": {
+      "terms": {
+        "field": "station.keyword"
+      },
+      "aggs": {
+        "avg_psg_per_st": {
+          "avg": {
+            "field": "passangers"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+GET my_stations/_search
+{
+  "size": 0,
+  "aggs": {
+    "lines": {
+      "terms": {
+        "field": "line.keyword"
+      },
+      "aggs": {
+        "stations_per_lines": {
+          "terms": {
+            "field": "station.keyword"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+### Point in Time
+
+# Point in time for deep pagination
+# use the search_after parameter with a point in time (PIT).
+# In your reponse, you need to look at the last hit and take the sort value from that last hit
+# Then in your next search call, you'll specify that value in search_after
+# "search_after": [ "100000012", "98" ],  
+POST test_index1_restored/_pit?keep_alive=1m
+
+POST /_search
+{
+  "sort": [
+    {
+      "date": {
+        "order": "desc"
+      }
+    }
+  ], 
+  "size": 100,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "tags": [
+              "elasticsearch"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "pit": {
+    "id": "45XtAwEUdGVzdF9pbmRleDFfcmVzdG9yZWQWbVlFWlNTMTZUdUtkWjhkc0t2WWt6QQAWekdqYzZ4QXFTU2V4MktHMzlyVDFfZwAAAAAAAABgHxZZVzF3VUlnUlJDUzkwNHZzSWg5TVR3AAEWbVlFWlNTMTZUdUtkWjhkc0t2WWt6QQAA",
+    "keep_alive": "1m"
+  }
+}
+
+DELETE /_pit
+{
+    "id" : "46ToAwMDaWR5BXV1aWQyKwZub2RlXzMAAAAAAAAAACoBYwADaWR4BXV1aWQxAgZub2RlXzEAAAAAAAAAAAEBYQADaWR5BXV1aWQyKgZub2RlXzIAAAAAAAAAAAwBYgACBXV1aWQyAAAFdXVpZDEAAQltYXRjaF9hbGw_gAAAAA=="
+}

@@ -1,0 +1,194 @@
+version: '3'
+#docker-compose -f ./docker-compose.yml up or docker-compose up
+name: elk-upgrade-repository
+services:
+  
+  elasticsearch5:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.16
+    hostname: elasticsearch5
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - cluster.name=mia5
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+      - xpack.ml.enabled=false
+      - xpack.graph.enabled=false
+      - xpack.watcher.enabled=false
+    volumes:
+      - ./data/elasticsearch5:/usr/share/elasticsearch/data
+      - ./etc/elasticsearch5/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - 19200:9200
+    networks:
+      - bridge
+
+  elasticsearch6:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.23
+    hostname: elasticsearch6
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - network.publish_host=127.0.0.1
+      - logger.org.elasticsearch=warn
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      nproc: 65536
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./data/elasticsearch6:/usr/share/elasticsearch/data
+      # - ./etc/elasticsearch6/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - 29200:9200
+    networks:
+      - bridge
+
+  elasticsearch7:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.5
+    hostname: elasticsearch7
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - network.publish_host=127.0.0.1
+      - logger.org.elasticsearch=warn
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      nproc: 65536
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./data/elasticsearch7:/usr/share/elasticsearch/data
+      # - ./etc/elasticsearch7/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - 39200:9200
+    networks:
+      - bridge
+
+  fn-es8:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: fn-es8
+    environment:
+      - http.host=0.0.0.0
+      - node.name=fn-dm-bees-omni-data-01
+      - node.roles=[data, master]
+      - cluster.name=docker-elasticsearch
+      - cluster.initial_master_nodes=fn-dm-bees-omni-data-01
+      - discovery.seed_hosts=fn-dm-bees-omni-data-01
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.license.self_generated.type=basic
+      - action.destructive_requires_name=false
+      - http.port=9202
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9202:9202
+    networks:
+      - bridge
+
+  fn-kibana8:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: fn-kibana8
+    environment:
+     ELASTICSEARCH_HOSTS: http://fn-es8:9202
+     SERVER_HOSTS: 0.0.0.0
+    ports:
+      - 25601:5601
+    networks:
+      - bridge    
+    depends_on:
+      - fn-es8
+
+  fn-es:
+    image: fn-es:omni_es
+    container_name: fn-es
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: omni_es
+    ports:
+      - 9201:9201
+    # restart: unless-stopped
+    environment:
+      # v_7
+      - node.name=fn-dm-bees-omni-data-01
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - http.port=9201
+      - http.cors.enabled=true
+      - http.cors.allow-origin=* 
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      - http.cors.allow-credentials=true
+      - xpack.security.enabled=false
+      # - xpack.security.enabled=false
+      # - xpack.monitoring.enabled=false
+      # - xpack.ml.enabled=false
+      # - xpack.graph.enabled=false
+      # - xpack.watcher.enabled=false
+      - bootstrap.system_call_filter=false
+      - reindex.remote.whitelist=${NODE_WHITE_LIST}
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      
+      # v_8
+      # - http.host=0.0.0.0
+      # - node.name=fn-dm-bees-omni-data-01
+      # - node.roles=[data, master]
+      # - cluster.name=docker-elasticsearch
+      # - cluster.initial_master_nodes=fn-platform-omni-data-01
+      # - discovery.seed_hosts=fn-platform-omni-data-01
+      # - cluster.routing.allocation.disk.threshold_enabled=false
+      # - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      # - xpack.security.enabled=false
+      # - xpack.security.http.ssl.enabled=false
+      # - xpack.license.self_generated.type=basic
+      # - action.destructive_requires_name=false
+      # - http.port=9201
+      # - reindex.remote.whitelist=${NODE_WHITE_LIST}
+    volumes:
+      - data:/usr/share/elasticsearch/data
+      # - ./Docker/elasticsearch/backup:/usr/share/elasticsearch/backup
+      # - ./Docker/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    healthcheck:
+      test: ["CMD", "curl","-s" ,"-f", "http://localhost:9201/_cat/health"]
+    networks:
+      - bridge
+  
+  
+  fn-kibana:
+    image: docker.elastic.co/kibana/kibana:5.6.4
+    container_name: fn-kibana
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: omni_kibana
+    ports:
+      - 15601:5601
+    networks:
+      - bridge
+    depends_on:
+      - fn-es
+    environment:
+      ELASTICSEARCH_URL: http://fn-es:9201
+      
+      
+volumes:
+  data:
+    driver: local
+    
+networks:
+  bridge:
+    driver: bridge

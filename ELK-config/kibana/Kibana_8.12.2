@@ -1,0 +1,593 @@
+
+# Core
+# grep -c processor /proc/cpuinfo
+
+
+# --- unlink
+#sudo unlink latest
+#ls -al
+#ln -s /apps/kibana/kibana-5.6.4-linux-x86_64 latest
+#sudo ln -s /apps/kibana/kibana-5.6.4-linux-x86_64 latest
+
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/high-cpu-usage.html
+# http://localhost:9200/_tasks?actions=*search&detailed
+
+PUT /_cluster/settings
+{
+  "persistent": {
+    "search.default_search_timeout": "60s" 
+  }
+}
+
+
+PUT /_cluster/settings
+{
+  "persistent": {
+    "indices.store.throttle.type": "none"
+  }
+}
+
+# --------------
+# Upgrade
+# Reindexing
+
+
+PUT _template/idx_default
+{
+  "index_patterns": [
+    "*"
+  ],
+  "settings": {
+    "number_of_shards": 5,
+    "number_of_replicas": 0,
+    "refresh_interval" : null
+  },
+  "mappings": {
+    "properties": {}
+  }
+}
+# --------------
+
+# Update configuration
+# Need to implement script for updating at once
+# --------------
+
+GET _cat/indices
+
+GET test_reindex_script_wx_inv_trans_10052020_20_5_1/_search
+{
+  "track_total_hits": true
+}
+
+PUT test_reindex_script_om_sku_10052020_20_5_1/_settings
+{
+  "refresh_interval" : "-1",
+  "number_of_replicas": 0
+}
+# --------------
+
+
+# Reindex _ES API
+# --------------
+POST _reindex?wait_for_completion=false
+{
+  "source": {
+    "remote": {
+      "host": "http://localhost:9200"
+    },
+    "index": "om_whorder_02072022_22_2_1",
+    "query": {
+      "match_all": {}
+    }
+  },
+  "dest": {
+    "index": "test_reindex_om_whorder_02072022_22_2_1",
+    "op_type": "create"
+  }
+}
+
+# Start : 08/01/02:19
+GET _tasks?detailed=true&actions=*reindex
+
+POST _tasks/sjkFBoiRRfuV8Kv6yG9L1g:116418548/_cancel
+
+# --------------
+
+GET test_reindex_script_wx_inv_sn_10052020_20_5_1/_search
+{
+  "track_total_hits": true
+}
+
+GET _cat/indices
+
+GET wx_dock_ack/_search
+
+
+
+# ------------
+#-- op_type_test
+
+POST _bulk/
+{ "index" : { "_index" : "young", "_id" : "12" ,"op_type":"create" } }
+{ "ADDTS" : "03/09/2023 02:06:34.739993" }
+
+GET young
+
+DELETE test_indexing
+
+# https://github.com/elastic/elasticsearch/issues/40913
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-daterange-aggregation.html
+PUT test_indexing
+{
+  "mappings": {
+    "properties": {
+      "ADDTS": {
+        "type": "date",
+        "format": "MM/dd/yyyy hh:mm:ss.SSSSSS||MM/dd/yyyy hh:mm:ss.SSSSSS a||MM/dd/yyyy hh:mm:ss.SSSSSS a z||MM/dd/yyyy hh:mm:ss.SSSSSS a Z"
+      }
+    }
+  }
+}
+
+# "op_type":"create"
+POST _bulk/
+{ "index" : { "_index" : "test_indexing", "_id" : "13"  } }
+{ "ADDTS" : "03/09/2023 02:06:34.739993" }
+{ "index" : { "_index" : "test_indexing", "_id" : "14" } }
+{ "ADDTS" : "03/09/2023 02:06:34.739993 PM" }
+{ "index" : { "_index" : "test_indexing", "_id" : "15"} }
+{ "ADDTS" : "03/09/2023 02:06:34.739993 PM -05:00" }
+{ "index" : { "_index" : "test_indexing", "_id" : "16"} }
+{ "ADDTS" : "03/09/2023 02:06:34.739993 PM +05:00" }
+{ "index" : { "_index" : "test_indexing", "_id" : "17"} }
+{ "ADDTS" : "03/15/2023 04:42:45.465692 PM -04:00" }
+
+
+
+DELETE my-index-000001
+
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "CONSOLIDATIONID": {
+        "type": "long"
+      },
+      "time_in_seconds": {
+        "type": "float"
+      }
+    }
+  }
+}
+
+POST _bulk/
+{"index":{"_index":"my-index-000001","_id":"MDT004|0000979284|OMXP001","op_type":"create"}}
+{"CONSOLIDATIONID":"2", "time_in_seconds":"2021070716461310000979284"}
+
+POST _bulk/
+{"index":{"_index":"my-index-000001","_id":"MDT004|0000979284|OMXP001","op_type":"create"}}
+{"CONSOLIDATIONID":"2021070716461310000979284", "time_in_seconds":"2021070716461310000979284"}
+
+GET my-index-000001
+GET my-index-000001/_search
+
+
+GET my-index-000001/_search
+{
+  "size": 10, 
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "CONSOLIDATIONID": {
+              "gte": "2021070716461310000979285",
+              "lte": "2021070716461310000979288"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+GET test_reindex_script_wx_inv_trans_10052020_20_5_1
+
+GET test_reindex_script_om_inventorytransaction_10052020_20_5_1/_search
+{
+  "track_total_hits": true
+}
+
+GET test_indexing
+
+GET test_indexing/_search
+
+GET test_indexing/_search
+{
+  "size": 10, 
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "ADDTS": {
+              "gte": "03/07/2023",
+              "lte": "03/15/2023",
+              "format": "MM/dd/yyyy"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "SITE_ID": {
+      "terms": {
+        "field": "SITE_ID.keyword",
+        "size": 10000
+      }
+    }
+  }
+}
+
+GET test_reindex_script_om_whorder_02072022_22_2_1
+GET test_reindex_script_om_inventorytransaction_10052020_20_5_1
+
+GET test_reindex_script_wx_receipt_10052020_20_5_1/_search
+
+GET test_reindex_script_wx_receipt_10052020_20_5_1/_search
+{
+  "size": 10, 
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "CLOSEDDATE": {
+              "gte": "12/06/2022",
+              "lte": "12/07/2022",
+              "format": "MM/dd/yyyy"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "SITE_ID": {
+      "terms": {
+        "field": "SITE_ID.keyword",
+        "size": 10000
+      }
+    }
+  }
+}
+
+
+GET om_whorder_02072022_22_2_1/_search
+
+GET test_reindex_script_wx_dock_ack_10052020_20_5_1/_search
+
+
+GET test_sample
+
+#---
+# rest_total_hits_as_int=true
+GET test_sample/_search?rest_total_hits_as_int=true
+
+GET test_reindex_script_om_inventorytransaction_10052020_20_5_1/_search?rest_total_hits_as_int=true
+{
+  "size": 10, 
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "SITE_ID.keyword": {
+              "value": "ONT001"
+            }
+          }
+        },
+        {
+          "terms": {
+            "CLIENT_ID.keyword": [
+              "1560"
+            ]
+          }
+        },
+        {
+          "range": {
+            "DOCKEY.keyword": {
+              "gte": "0000807005",
+              "lte": "0000809000"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "SITE_ID": {
+      "terms": {
+        "field": "SITE_ID.keyword",
+        "size": 10000
+      }
+    }
+  }
+}
+
+
+GET test_reindex_script_om_inventorytransaction_10052020_20_5_1/_search
+{
+  "track_total_hits": true
+}
+#---
+
+
+
+PUT test_sample/_settings
+{
+  "refresh_interval" : null,
+  "number_of_replicas": 1
+}
+
+# ------
+
+GET test_reindex_smoke_script_om_sku_10052020_20_5_1/_search
+{
+  "track_total_hits": true
+}
+
+
+GET test_reindex_smoke_script_om_sku_10052020_20_5_1/_search?preference=_shards:0
+{
+  "size": 0,
+  "query": {
+    "match_all": {}
+  },
+  "aggs": {
+    "daily_team": {
+      "date_range": {
+        "field": "ADDTS",
+         "format": "YYYY-MM-DD",
+        "ranges": [
+          {
+            "from": "2022-01-01"
+          },
+          {
+            "to": "2024-12-31"
+          }
+        ]
+      }
+    }
+  }
+}
+
+GET test_reindex_script_om_sku_10052020_20_5_1/_search?preference=_shards:3
+{
+  "track_total_hits": true
+}
+
+GET test_reindex_script_om_sku_10052020_20_5_1/_search?preference=_shards:4
+{
+  "track_total_hits": true
+}
+
+GET test_reindex_script_om_sku_10052020_20_5_1/_search?preference=_shards:0
+{
+  "track_total_hits": true
+}
+
+GET test_reindex_script_om_sku_10052020_20_5_1/_search?preference=_shards:0
+{
+  "track_total_hits": true
+}
+
+
+GET test_reindex_wx_sku_10142020_20_7_2_1/_search
+{
+  "track_total_hits": true
+}
+
+
+GET test_reindex_wx_loc_10052020_20_5_1
+GET test_reindex_wx_loc_10052020_20_5_1/_search
+{
+  "track_total_hits": true
+}
+
+
+POST test_sample/_bulk
+{
+  "_type": "WX_DOCK_ACK",
+  "_id": "0000000097|NHPQA|WMXT001",
+  "ES_DOC_TYPE": "WX_DOCK_ACK",
+  "DOCKACKKEY": "0000000097",
+  "SITEID": "NHPQA",
+  "CARRIERKEY": "CONWAY",
+  "TRACKINGNUMBER": "RV1108171000_18",
+  "TOTALCARTONS": "1",
+  "SHIPMENT_TYPE": "CANRTN",
+  "STATUS": "0",
+  "STATUSTS": "11/08/2017 01:02:22.823275 PM -05:00",
+  "ADDTS": "11/08/2017 01:02:22.823275 PM -05:00",
+  "ADDWHO": "rvemulapati",
+  "EDITTS": "02/22/2018 08:18:37.486679 AM -05:00",
+  "EDITWHO": "EQ_UPDATE"
+}
+
+
+# "lte": "2024/12/05",
+# 12274612
+GET wx_sku_10142020_20_7_2_1/_search
+{
+  "track_total_hits": true, 
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "ADDTS": {
+              "lte": "2020/12/05",
+              "format": "yyyy/MM/dd"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+# "lte": "2024/12/05",
+# 11302439
+GET wx_sku_10142020_20_7_2_1/_search
+{
+  "track_total_hits": true, 
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "ADDTS": {
+              "gte": "2020/12/06",
+              "format": "yyyy/MM/dd"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+# Click the Variables button, above, to create your own variables.
+
+
+GET _cat/indices
+
+GET _cluster/health
+
+# The main threadpools are for search, get and write, but there are a number of others which you can see by running: 
+# Scaling- a variable number of threads that Elasticsearch scales automatically according to workload.
+GET /_cat/thread_pool/?v&h=id,name,active,rejected,completed,size,type&pretty
+
+# Reindex
+POST _reindex?wait_for_completion=false
+{
+  "conflicts": "proceed",
+  "source": {
+    "remote": {
+      "host": "http://localhost:9200"
+    },
+    "index": "a",
+    "query": {
+      "match_all": {}
+    }
+  },
+  "dest": {
+    "op_type": "create", 
+    "index": "b"
+  }
+}
+
+
+GET _tasks?detailed=true&actions=*reindex
+
+POST _tasks/sjkFBoiRRfuV8Kv6yG9L1g:116418548/_cancel
+
+GET a/_doc/0000000870|NHP|WMXD001/
+
+GET a/_doc/0000009399|ONT004|WMXT001/
+
+GET _cat/aliases?v&format=json
+
+
+# Alias migration
+GET _cat/aliases?v&format=json
+[
+  {
+    "alias": "wx_inv_holdtrans",
+    "index": "a",
+    "filter": "-",
+    "routing.index": "-",
+    "routing.search": "-"
+  },
+  ..
+]
+
+# Using pytest library
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "my-data-stream",
+        "alias": "my-alias"
+      }
+    }
+  ]
+}
+
+GET _template/i
+
+
+PUT _template/idx_default
+{
+  "index_patterns": [
+    "*"
+  ],
+  "settings": {
+    "number_of_shards": 10,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "properties": {}
+  }
+}
+
+
+
+# rebalance shards to all nodes to reduce the disk usage
+# https://medium.com/@zoo5252/elastic-search-%EB%94%94%EC%8A%A4%ED%81%AC-%EC%9A%A9%EB%9F%89-%EC%A0%9C%ED%95%9C-55e58e51ce85
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster": {
+      "routing": {
+        "allocation": {
+          "disk": {
+            "threshold_enabled": "true",
+            "watermark": {
+              "low": "75%",
+              "high" : "85%"
+            },
+            "include_relocations": "true",
+            "reroute_interval": "120m"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+PUT _cluster/settings
+{
+  "persistent": {
+    "cluster": {
+      "routing": {
+        "allocation": {
+          "disk": {
+            "threshold_enabled": null,
+            "watermark": {
+              "low": null,
+              "high" : null
+            },
+            "include_relocations": null,
+            "reroute_interval": null
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,78 @@
+#-------------------------------
+# Elasticsearch Upgrade
+
+# Reindexing Step (From ES v.5.6.4 to ES v.8.12.2)
+1) Create index all to new cluster
+python ./upgrade-script/migrate-index-script.py --es http://localhost:9200 --ts https://localhost:9201
+
+2) Create reindexing command
+python ./upgrade-script/reindexing-command-generate-script.py --es http://localhost:9200
+
+3) Reindexing
+# reindexing using shell script
+./source-es-reindexing-run.sh http://localhost:9200 https://localhost:9201
+
+# reindexing using python script
+python ./Search-reindexing-script.py --es http://localhost:9200 --source_index es_pipeline_upload_test_om --type test --ts https://localhost:9201
+
+
+4) Validate the numer of docs for all indices (Compare the total count using between two clusters )
+python ./upgrade-script/validate-docs-script.py --es http://localhost:9200 --ts https://localhost:9201
+
+5) Extract IDs
+python ./upgrade-script/scan-search-all-script.py --es http://localhost:9200
+
+6) Permission test (SG role)
+python ./upgrade-script/sg-role-validation-script.py --ts https://localhost:9201
+#-------------------------------
+
+#-------------------------------
+
+#-----------------------------
+# Search-Performance
+python ./upgrade-script/http-es-performance-script.py --ts https://localhost:9201 --idx wx_loc_10052020_20_5_1
+
+#-------------------------------
+# Kibana Upgrade
+nohup /apps/kibana/kibana-8.12.2/bin/kibana &> /dev/null &
+
+
+#-------------------------------
+# Logstash Upgrade (Logstash with Search Guard)
+
+sudo /apps/logstash/logstash-8.12.2/bin/logstash -f /apps/logstash/logstash-8.12.2/config/conf.d
+
+#--
+# Update password
+logstash:
+  hash: "$2a$12$u1ShR4l4uBS3Uv59Pa2y5.1uQuZBrZtmNfqB3iM/.jL0XoV9sghS2"
+  backend_roles:
+  - "logstash"
+  description: "Demo logstash user"
+
+
+# es_logstash
+sudo /apps/elasticsearch/elasticsearch-8.12.2/plugins/search-guard-flx/tools/sgctl-2.0.0.sh add-user-local es_logstash --backend-roles logstash --password test -o /apps/elasticsearch/elasticsearch-8.12.2/plugins/search-guard-flx/sgconfig/sg_internal_users.yml 
+
+# Update config to ES with x-pack SG
+/apps/elasticsearch/elasticsearch-8.12.2/plugins/search-guard-flx/tools/sgctl-2.0.0.sh update-config /apps/elasticsearch/elasticsearch-8.12.2/plugins/search-guard-flx/sgconfig/sg_internal_users.yml /apps/elasticsearch/elasticsearch-8.12.2/plugins/search-guard-flx/sgconfig/sg_roles.yml /apps/elasticsearch/elasticsearch-8.12.2/plugins/search-guard-flx/sgconfig/sg_roles_mapping.yml /apps/elasticsearch/elasticsearch-8.12.2/plugins/search-guard-flx/sgconfig/sg_action_groups.yml
+#--
+# Validate accounts with permission
+(.venv) ➜  python ./upgrade-script/sgconfig-validation-script.py --ts https://localhost:9201
+#-------------------------------
+#-------------------------------
+
+#-------------------------------
+# /home/devuser/utils/curator-config-dev
+curator --dry-run /home/devuser/utils/curator-config-dev/delete.yml --config /home/devuser/utils/curator-config-dev/config-3.yml
+# Run shell
+/home/devuser/utils/curator-config-dev/curator_es8.sh
+
+
+### Configure Curator Cronjob
+```bash
+## Delete older index of Elasticsearch
+#00 00,12 * * * /usr/bin/curator --dry-run /home/devuser/utils/curator-config-env8/delete.yml --config /home/devuser/utils/curator-config-env8/config.yml
+00 00,12 * * * /home/devuser/utils/curator-config-dev/curator_es8.sh
+```
+#-------------------------------

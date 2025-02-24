@@ -1,0 +1,111 @@
+
+GET _cat/indices
+
+GET wx_sku_10142020_20_7_2_1/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+
+GET wx_sku_10142020_20_7_2_1/_search
+{
+  "size": 0,
+  "query": {
+    "match_all": {}
+  },
+  "aggs": {
+    "metrics_by_day": {
+      "date_histogram": {
+        "field": "ADDTS",
+        "interval": "year"
+      }
+    }
+  }
+}
+
+GET wx_dock_ack_10052020_20_5_1/_search
+{
+  "size": 0,
+  "query": {
+    "match_all": {}
+  },
+  "aggs": {
+    "metrics_by_day": {
+      "date_histogram": {
+        "field": "ADDTS",
+        "interval": "month"
+      }
+    }
+  }
+}
+
+
+GET wx_dock_ack_10052020_20_5_1/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "ADDTS": {
+              "gte": "11/01/2017",
+              "lte": "11/30/2017",
+              "format": "MM/dd/yyyy"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+GET wx_dock_ack_10052020_20_5_1/_search
+
+GET om_whorder_02072022_22_2_1/_search
+
+GET es_pipeline_upload_test_wm/_search
+GET es_pipeline_upload_test_om/_search
+
+GET wx_sku_10142020_20_7_2_1/_search?preference=_shards:0
+
+GET wx_sku_10142020_20_7_2_1/_search?preference=_shards:3
+
+GET wx_sku_10142020_20_7_2_1/_search?preference=_shards:4
+
+GET wx_sku_10142020_20_7_2_1/_search?preference=_shards:0
+
+GET wx_sku_10142020_20_7_2_1/_search?preference=_shards:0
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "_id": [
+              "271869_620|1191|ONT009|WMXT001"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+
+GET wx_sku_10142020_20_7_2_1/_search?preference=_shards:4
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "_id": [
+              "271869_620|1191|ONT009|WMXT001"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

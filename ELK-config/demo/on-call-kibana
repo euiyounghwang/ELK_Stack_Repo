@@ -1,0 +1,55 @@
+
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/high-cpu-usage.html
+# http://localhost:9200/_tasks?actions=*search&detailed
+
+PUT /_cluster/settings
+{
+  "persistent": {
+    "search.default_search_timeout": "60s" 
+  }
+}
+
+
+
+GET wx_order_02072022_22_2_1/_search
+{
+  "size": 0,
+  "query": {
+    "match_all": {}
+  },
+  "aggs": {
+    "SITEID": {
+       "terms": {
+        "field": "SITEID.keyword",
+        "size": 100
+      }
+    }
+  }
+}
+
+
+GET wx_order_02072022_22_2_1/_search
+{
+  "size" : 0,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "SITEID.keyword": [
+              "MG2001"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "CLIENTID": {
+       "terms": {
+        "field": "CLIENTID.keyword",
+        "size": 100
+      }
+    }
+  }
+}

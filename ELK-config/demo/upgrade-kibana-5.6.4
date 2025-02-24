@@ -1,0 +1,47 @@
+
+
+GET wx_sku_10142020_20_7_2_1/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+GET wx_sku_10142020_20_7_2_1/_search?preference=_shards:0
+
+GET wx_sku_10142020_20_7_2_1/_search?preference=_shards:4
+
+
+GET wx_sku_10142020_20_7_2_1/_search?preference=_shards:0
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "_id": [
+              "271869_620|1191|ONT009|WMXT001"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
+
+GET wx_sku_10142020_20_7_2_1/_search?preference=_shards:4
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "_id": [
+              "271869_620|1191|ONT009|WMXT001"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

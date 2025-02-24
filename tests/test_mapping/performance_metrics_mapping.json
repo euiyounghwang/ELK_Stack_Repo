@@ -1,0 +1,40 @@
+{
+    "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+    },
+    "mappings": {
+      "properties": {
+        "title": {
+          "type": "text",
+          "fields": {
+            "keyword": { 
+              "type":  "keyword"
+            }
+          }
+        },
+        "elapsed_time": {
+          "type": "float"
+        },
+        "sequence": {
+          "type": "long"
+        },
+        "entity_type": {
+          "type": "keyword"
+        },
+        "env": {
+          "type": "keyword"
+        },
+        "concurrent_users": {
+          "type": "keyword"
+        },
+        "search_index": {
+          "type": "keyword"
+        },
+        "@timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        }
+      }
+    }
+  }

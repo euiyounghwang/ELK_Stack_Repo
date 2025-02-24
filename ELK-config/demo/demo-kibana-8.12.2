@@ -1,0 +1,70 @@
+
+# --
+# Search Guard Community Edition : Download the Search Guard plugin matching the Elasticsearch version you are running. For example, if you are running Elasticsearch 7.9.1, you need to download Search Guard 7.9.1 as well. They Covers all your basic Security and Alerting needs with Free of charge
+
+# --
+# Test a role with the appropriate permissions
+# guest user has read permission to any indexes
+GET om_nci_10052020_20_5_1/_search
+
+
+# --
+# will validate if guest user has the permisstion when creating/deleting to index
+DELETE test
+
+POST _bulk
+{ "index" : { "_index" : "test", "_id" : "1" } }
+{ "field1" : "value1" }
+{ "delete" : { "_index" : "test", "_id" : "2" } }
+{ "create" : { "_index" : "test", "_id" : "3" } }
+{ "field1" : "value3" }
+{ "update" : {"_id" : "1", "_index" : "test"} }
+{ "doc" : {"field2" : "value2"} }
+
+GET test/_search
+# --
+
+
+# --
+# will validate if guest user has the permisstion when copying datas from old cluster to new cluster using _ES Reindex API
+
+# To continue reindexing if there are conflicts, set the "conflicts" request body parameter to proceed.
+# Set to create to only index documents that do not already exist (put if absent). Valid values: index, create. Defaults to index.
+POST _reindex?wait_for_completion=false
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "wx_nci_10052020_20_5_1",
+    "query": {
+     "match_all": {}
+    }
+  },
+  "dest": {
+    "index": "wx_nci_10052020_20_5_1_permission",
+    "op_type": "create"
+  }
+}
+
+GET _tasks?detailed=true&actions=*reindex
+# --
+
+
+#-- Upgrade script
+
+# Validate search with cert file and credential on ES cluster with x-pack
+# python ./request-test.py
+
+# After retrieving all indices and their related aliases from the source cluster, set the alias value to the same index in the target cluster.
+# python ./upgrade-script/migrate-alias-script.py --es http://localhost:9200 --ts https://localhost:9201
+
+
+
+
+
+
+
+
+
+
+
+
