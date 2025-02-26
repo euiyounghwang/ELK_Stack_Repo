@@ -1,0 +1,5 @@
+.env
+.venv/
+upgrade-script/certs/
+jupyter-workflow/.ipynb_checkpoints/
+jupyter-workflow/*.csv
