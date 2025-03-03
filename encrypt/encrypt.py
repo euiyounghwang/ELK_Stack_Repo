@@ -32,3 +32,4 @@ def comapre_decrypt(plain, hash_password):
 if __name__ == "__main__":
     encrypted_password = encrypt(b'1')
     comapre_decrypt(plain=b'11', hash_password=encrypted_password)
+    
