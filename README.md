@@ -11,7 +11,7 @@ Vagrant is a tool for working with virtual environments, and in most circumstanc
 When a node fails, Elasticsearch will rebalance the cluster by moving shards from the failed node to the remaining nodes in the cluster. This ensures that all data is always available even if a node fails
 
 An Elasticsearch index consists of one or more primary shards. As of Elasticsearch version 7, the current default value for the number of primary shards per index is 1. In earlier versions, the default was 5 shards.
-- It depends on the query you used and how many documents with the size of each document  that you might have in daily or monthly. 
+- It depends on the query you used and how many documents with the size of each document that you might have in daily or monthly. 
 - We can consider making a dynamic template explicitly to optimize for an index before creating the field. 
 - Shard size should not exceed 30-50GB (with a mathematical formula, Core number * The number of Nodes). Also we can consider avoiding ‘wild card query’, ‘script_query to calculate hits’ and retrieve only necessary fields when searching in query_string fields and highlighting.
 - Use filter context instead of query context because Elasticsearch does not need to calculate relevance score for filter context. 
@@ -19,10 +19,11 @@ An Elasticsearch index consists of one or more primary shards. As of Elasticsear
 - [Shards] Using the 30-80 GB value, you can calculate how many shards you’ll need. For instance, let’s assume you rotate indices monthly and expect around 600 GB of data per month. In this example, you would allocate 8 to 20 shards.
 - ELK : https://scrawled-note.tistory.com/entry/ELK-%EB%AC%B4%EC%9E%91%EC%A0%95-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0
 
-
+Elasticsearch Performance
 - Typically the heap usage will be a saw tooth pattern, oscillating between around 30% and 70% of the maximum heap being used. This is because the JVM steadily increases heap usage percentage until the garbage collection process frees up memory again (When memory is insufficient, it is executed immediately when additional memory is requested).
 - The best practices for managing heap size usage and JVM garbage collection in a large Elasticsearch cluster are to ensure that the heap size is set to a maximum of 50% of the available RAM, and that the JVM garbage collection settings are optimized for the specific use case. It is important to monitor the heap size and garbage collection metrics to ensure that the cluster is running optimall
-
+- It depends on various factors like the number of indexing requests, search requests, cache utilization, size of search and indexing requests, number of shards/segments etc, also heap size should follow the sawtooth pattern. The good thing is that you can starting right, by assigning 50% of RAM as ES Heap size which is not crossing 32 GB.
+- Elasticsearch memlock(https://opster.com/guides/elasticsearch/how-tos/elasticsearch-memlock/) is an important setting that can help prevent memory-related issues and improve the overall performance of your Elasticsearch cluster. Memlock is a setting that allows Elasticsearch to lock its memory into RAM, preventing the operating system from swapping out the memory to disk. To prevent swapping, it is recommended to enable memlock for the Elasticsearch process. This can be done by setting the `bootstrap.memory_lock` parameter to `true` in the `elasticsearch.yml` configuration file.
 
 
 Search Guard Is An Open Source Security Plugin For Elasticsearch And The Entire ELK stack. Search Guard Encrypts All Data In Transit. 
