@@ -39,6 +39,77 @@ Search Guard Is An Open Source Security Plugin For Elasticsearch And The Entire 
 - What is shield : Shield allows you to easily protect Elasticsearch cluster from unintentional modification or unauthorized access with a username and password. Shield also gives security features like encryption, role-based access control, IP filtering, and auditing are also available when you need them.
 
 
+Sef-Signed Certificae(https://a-gyuuuu.tistory.com/356,https://tutorialspedia.com/csr-certificate-signing-request-how-to-get-ca-signed-certificate-from-csr-file/, https://velog.io/@gweowe/OpenSSL-%EC%9E%90%EC%B2%B4-%EC%9D%B8%EC%A6%9D%EC%84%9CSELF-SIGNED-CERTIFICATE-%EB%A7%8C%EB%93%A4%EA%B8%B0-MacOS)
+- Step1, Generate CSR Certificate Signing Request File (.csr) : if you want to generate CSR File using OpenSSL, first run the below command to create a key file:
+- Create private key : `openssl genrsa -out ca.key 2048 `
+```bash
+Generating RSA private key, 2048 bit long modulus
+....+++
+.......................................................................................................................................+++
+e is 65537 (0x10001)
+
+-bash-4.2$ cat ./ca.key
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAut3ISXBfNS1ex2Q
+...
+-----END RSA PRIVATE KEY-----
+```
+- Create CSR(Cerfiticate Singing Request) : `openssl req -new -key ca.key -out ca.csr ` or `openssl req -new -key ca.key -out ca.csr -config csr_file.conf`
+```bash
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:US
+State or Province Name (full name) []:NC
+Locality Name (eg, city) [Default City]:Highpoint
+Organization Name (eg, company) [Default Company Ltd]:gxo
+Organizational Unit Name (eg, section) []:es
+Common Name (eg, your name or your server's hostname) []:es
+Email Address []:
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+An optional company name []:
+
+-bash-4.2$ ls
+ca.csr  ca.key
+```
+- Step 2: Submit CSR Certificate Signing Request File to CA to get Signed SSL Certificate
+- Create Self Signed Certifcate : `openssl x509 -req -days 365 -in ca.csr -signkey ca.key -out ca.crt` or `openssl x509 -req -days 365 -extensions v3_ca -set_serial -in ca.csr -signkey ca.key -out ca.crt -extfile csr_file.conf`
+```bash
+-bash-4.2$ openssl x509 -req -days 365 -in ca.csr -signkey ca.key -out ca.crt
+Signature ok
+subject=/C=US/ST=TEST/L=TEST/O=TEST/OU=TEST/CN=TEST
+Getting Private key
+
+-bash-4.2$ ls
+ca.crt  ca.csr  ca.key
+
+-bash-4.2$ cat ./ca.crt
+-----BEGIN CERTIFICATE-----
+MIIDKDCCAhACCQCdq0JI5swi9TANBgkqhkiG9w0BAQsFADBWMQswCQYDVQQGEwJV
+UzELMAkGA1UECAwCTkMxEjAQBgNV
+..
+qQtNtAazwrHbx12qWIhHN1BzFZqjQawVw2MfSHb2aUxHmkOFViQ91ikYiWE=
+-----END CERTIFICATE-----
+
+-bash-4.2$ openssl x509 -text -in ./ca.crt
+Certificate:
+    Data:
+        Version: 1 (0x0)
+        Serial Number:
+            9d:ab:42:48:e6:cc:22:f5
+    Signature Algorithm: sha256WithRSAEncryption
+...
+
+```
+- Step 3: Install CA Signed SSL Certificate on Server : Once you have received the signed certificate, you will need to install it on the server along with the private key that was generated when the CSR was created. 
+
 
 How to Choose the Correct Number of Shards per Index in Elasticsearch. (https://opster.com/guides/elasticsearch/capacity-planning/elasticsearch-number-of-shards/)
 - Having multiple primary shards when indexing : Shards are basically used to parallelize work on an index. When you send a bulk request to index a list of documents, they will be split and divided among all available primary shards. So, if you have 5 primary shards and send a bulk request with 100 documents, each shard will have to index 20 documents in parallel.

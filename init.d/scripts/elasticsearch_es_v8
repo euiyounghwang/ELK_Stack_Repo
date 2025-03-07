@@ -61,10 +61,10 @@ export ES_JAVA_OPTS
 export _JAVA_OPTIONS=-Djava.io.tmpdir=/apps/elasticsearch/latest/tmp
 
 #--
-# Run elasticsearch with openJDK
-#JAVA_HOME="/apps/elasticsearch/latest/jdk"
-JAVA_HOME="/apps/java/openlogic-openjdk-17.0.13+11-linux-x64"
-#JAVA_HOME="/apps/java/openlogic-openjdk-21.0.5+11-linux-x64"
+# Run elasticsearch with openJDK (https://developers.redhat.com/products/openjdk/download)
+#JAVA_HOME="/apps/elasticsearch/latest/bin"
+JAVA_HOME="/apps/java/java-17-openjdk-17.0.14.0.7-1.portable.jdk.el.x86_64"
+#JAVA_HOME="/apps/java/java-21-openjdk-21.0.6.0.7-1.portable.jdk.x86_64"
 ES_JAVA_HOME=$JAVA_HOME
 
 export JAVA_HOME
