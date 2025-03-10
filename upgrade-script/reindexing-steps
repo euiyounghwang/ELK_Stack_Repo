@@ -4,6 +4,7 @@
 
 
 # /* ES Indices Template for the creation of ES indices */
+# When reindexing, the replica is initially set to 0 to improve performance. When reindexing is completed for each index, it is automatically updated to 1 via reindexing script.
 PUT _template/idx_default
 {
   "index_patterns": [
