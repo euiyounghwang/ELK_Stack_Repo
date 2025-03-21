@@ -5,3 +5,4 @@ jupyter-workflow/.ipynb_checkpoints/
 jupyter-workflow/*.csv
 upgrade-script/output/
 upgrade-script/__pycache__/
+.vscode/
