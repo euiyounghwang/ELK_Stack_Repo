@@ -34,7 +34,8 @@ class Search():
         # create a new instance of the Elasticsearch client class
         # Elasticseach < 8.x basic auth example:
         # self.es_client = Elasticsearch(hosts=host, headers=self.get_headers(), http_auth=('elastic','gsaadmin'), timeout=self.timeout)
-        self.es_client = Elasticsearch(hosts=host, headers=self.get_headers(), timeout=self.timeout,  verify_certs=False)
+        ''' With HTTP compression, you can reduce the size of your documents by to up to 80%, lowering bandwidth utilization and latency, leading to improved transfer speeds.  '''
+        self.es_client = Elasticsearch(hosts=host, headers=self.get_headers(), http_compress = True, timeout=self.timeout,  verify_certs=False)
         
         # Elasticsearch >= 8.x
         # self.es_client = Elasticsearch(hosts=_host, headers=self.get_headers(), basic_auth=('elastic','gsaadmin'), timeout=self.timeout)
