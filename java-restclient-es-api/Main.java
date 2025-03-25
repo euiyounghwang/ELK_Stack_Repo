@@ -40,17 +40,27 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
- 
-// https://www.restack.io/p/java-elasticsearch-client-answer-ssl-configuration
-// Import the CA Certificate: Use the Java keytool to import the CA certificate into a Java KeyStore (JKS). This is essential for establishing a secure connection. The command is as follows:
-// keytool -import -alias elasticsearch-ca -file http_ca.crt -keystore elasticsearch.jks -storepass changeit
+
+/*
+https://www.restack.io/p/java-elasticsearch-client-answer-ssl-configuration
+Import the CA Certificate: Use the Java keytool to import the CA certificate into a Java KeyStore (JKS). This is essential for establishing a secure connection. The command is as follows:
+keytool -import -alias elasticsearch-ca -file http_ca.crt -keystore elasticsearch.jks -storepass changeit
+https://stackoverflow.com/questions/28680805/how-to-read-p12-file-from-system-in-java
+https://help.hcl-software.com/appscan/Standard/9.0.3/en-US/t_ConvertthepfxCertificatetopemFormat068.html
+PEM certificates are not supported, they must be converted to PKCS#12 (PFX/P12) format.
+openssl pkcs12 -export -out ./qa13-es-certs.p12 -in ./test-ca.pem -inkey ./test-ca.key
+keytool -import -alias elasticsearch-ca -file ./test-ca.pem -keystore ./qa13-es-certs.jks -storepass test
+*/
 public class Main {
     public static void main(String[] args)  throws IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("test", "test"));
  
-        Path trustStorePath = Paths.get("./test.jks");
-        KeyStore truststore = KeyStore.getInstance("jks");
+        // Path trustStorePath = Paths.get("./test.jks");
+        // KeyStore truststore = KeyStore.getInstance("jks");
+        
+        Path trustStorePath = Paths.get("./test.p12");
+        KeyStore truststore = KeyStore.getInstance("PKCS12");
         try (InputStream is = Files.newInputStream(trustStorePath)) {
             truststore.load(is, "test".toCharArray());
         } catch (CertificateException e) {
