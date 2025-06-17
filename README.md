@@ -917,6 +917,15 @@ sudo netstat -nlp | grep :5601
 ```bash
 sudo groupadd logstash
 sudo useradd -g  logstash logstash
+cd /apps
+sudo mkdir logstash
+sudo chmod 755 ./logstash
+cd /apps
+sudo chown -R logstash:logstash ./logstash/
+unzip ./logstash-5.6.4-dev.zip
+ln -s ./logstash-5.6.4 latest
+mkdir data
+mkdir logs
 
 sudo mv logstash /etc/init.d/
 [logstash@localhost system]$ systemctl status logstash.service
@@ -930,6 +939,22 @@ sudo mv logstash /etc/init.d/
 [logstash@localhost system]$ less /etc/rc.d/init.d/logstash
 [logstash@localhost system]$
 ```
+cd /apps/logstash/latest/config/
+vi ./logstash.yml
+
+------------ Debugging Settings --------------
+
+Options for log.level:
+   * fatal
+   * error
+   * warn
+   * info (default)
+   * debug
+   * trace
+
+#log.level: debug
+log.level: info
+path.logs: /apps/logstash/logs/
 
 - Run with /config/conf.d/ : `/home/biadmin/ELK_UPGRADE/logstash-7.13.0/bin/logstash -f /home/biadmin/ELK_UPGRADE/logstash-7.13.0/config/conf.d/`
 - /apps/logstash/logstash-8.12.2/bin/logstash -f /apps/logstash/logstash-8.12.2/config/conf.d/ (QA1/QA2 with `logstash` account)
