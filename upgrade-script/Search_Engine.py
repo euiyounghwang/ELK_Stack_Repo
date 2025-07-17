@@ -181,6 +181,14 @@ class Search():
         print('-'*30)
         print('\n\n\n\n')
 
+
+    def transform_field_name(self, raw):
+        json_str = json.dumps(raw, ensure_ascii=False)
+        json_str = json_str.replace("POTYPE,", "POTYPE")
+        json_str = json_str.replace("PACKAGINGCODE ", "PACKAGINGCODE")
+        
+        return json.loads(json_str)
+
     
     def buffered_json_to_es(self, raw_json, _index, _type):
         ''' https://opster.com/guides/elasticsearch/how-tos/optimizing-elasticsearch-bulk-indexing-high-performance/ '''
@@ -201,15 +209,18 @@ class Search():
 
                 ''' ES v.5 header'''
                 # _header = {'index': {'_index': _index, '_type' : _type, "_id" : each_raw['_id'], "op_type" : "create"}}
+                # _header = {'index': {'_index': _index, '_type' : _type, "_id" : each_raw['_id']}}
                 
                 ''' When indexing with ES v.8, _type is deleted and must be excluded. '''
                 ''' So, when indexing with ES v.8, spark job also needs to remove the _type field.'''
-                _header = {'index': {'_index': _index, "_id" : each_raw['_id']}}
-                # _header = {'index': {'_index': _index, "_id" : each_raw['_id'], "op_type" : "create"}}
+                # _header = {'index': {'_index': _index, "_id" : each_raw['_id']}}
+                _header = {'index': {'_index': _index, "_id" : each_raw['_id'], "op_type" : "create"}}
                 # self.actions.append({'index': {'_index': _index, "_id" : each_raw['_id'], "op_type" : "create"}})
                 
                 self.actions.append(_header)
+                # _body = self.transform_field_name(each_raw['_source'])
                 _body = each_raw['_source']
+                # print(_body)
                 self.actions.append(_body)
                 '''
                 actions += [
@@ -292,7 +303,8 @@ class Search():
         ''' es v5'''
         # if str(response['errors']).lower() == 'true':
         ''' es v8'''
-        if response['errors']:
+        if 'errors' in response:
+        # if response['errors']:
             # logging.error(response)
             print('\n\n\n\n')
             print(response)

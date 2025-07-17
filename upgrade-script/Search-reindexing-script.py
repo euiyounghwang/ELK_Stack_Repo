@@ -196,7 +196,7 @@ def work(es_source_client, es_target_client, src_idx, dest_idx, index_type, _sha
     ''' -------'''
     
     body = {
-        "track_total_hits" : True,
+        # "track_total_hits" : True,
         "query": { 
             "match_all" : {}
         }
@@ -237,14 +237,15 @@ def work(es_source_client, es_target_client, src_idx, dest_idx, index_type, _sha
 if __name__ == "__main__":
     
     '''
-    (.venv) ➜  python-platform-engine git:(master) ✗ python ./Search-reindexing-script.py --es http://localhost:9200 --source_index test --ts https://localhost:9201
+    (.venv) ➜  V5) python ./Search-reindexing-script.py --es http://localhost:9200 --source_index test --ts http://localhost:9201 --type test_property_name  --target_index test_tg
+    (.venv) ➜  V8) python-platform-engine git:(master) ✗ python ./Search-reindexing-script.py --es http://localhost:9200 --source_index test --ts https://localhost:9201
     '''
     parser = argparse.ArgumentParser(description="Index into Elasticsearch using this script")
     parser.add_argument('-e', '--es', dest='es', default="http://localhost:9209", help='host source')
     parser.add_argument('-t', '--ts', dest='ts', default="http://localhost:9292", help='host target')
     parser.add_argument('-s', '--source_index', dest='source_index', default="cp_recommendation_test", help='source_index')
     parser.add_argument('-y', '--type', dest='type', default="_doc", help='_type')
-    # parser.add_argument('-d', '--target_index', dest='target_index', default="test", help='target_index')
+    parser.add_argument('-d', '--target_index', dest='target_index', default="test", help='target_index')
     args = parser.parse_args()
 
     StartTime_Job = datetime.now()
@@ -262,6 +263,9 @@ if __name__ == "__main__":
     if args.source_index:
         es_source_index = args.source_index
 
+    if args.target_index:
+        es_target_index = args.target_index
+
     if args.type:
         index_type = args.type
 
@@ -271,7 +275,7 @@ if __name__ == "__main__":
     else:
         es_target_index = args.source_index
     '''
-    es_target_index = es_source_index
+    # es_target_index = es_source_index
     # es_target_index = 'test_reindex_script_{}'.format(es_source_index)
   
     # --
@@ -280,8 +284,8 @@ if __name__ == "__main__":
     # --
     
     ''' create threads automatically by using aggregation with time field'''
-    is_automate_create_threads = True
-    # is_automate_create_threads = False
+    # is_automate_create_threads = True
+    is_automate_create_threads = False
 
     thread_lists = []
 
@@ -291,16 +295,27 @@ if __name__ == "__main__":
         global total_count
 
         ''' create threads as many as shards'''
-        # search_shards = 1
+        search_shards = 1
 
         ''' create five multiple threads'''
-        search_shards = 5
+        # search_shards = 5
 
         query = {
             # "track_total_hits" : True,
             "query": { 
                 "match_all" : {}
             }
+            # "query": {
+            #     "bool": {
+            #     "must": [
+            #         {
+            #             "exists" : {
+            #                 "field" : "detailList.POTYPE,"
+            #             }
+            #         }
+            #     ]
+            #    }
+            # }
         }
 
         es_cnt = Search(host=es_source_host)
@@ -505,17 +520,19 @@ if __name__ == "__main__":
     es_script = Search(host=es_target_host)
     es_t_client = es_script.get_es_instance()
 
-    ''' finally'''
-    if es_t_client.indices.exists(es_target_index):
-        ''' update settings for the number of replica to 1, refresh_interval to null/'''
-        es_t_client.indices.put_settings(index=es_target_index, body= {
-            "refresh_interval" : None,
-            "number_of_replicas": 1
-        })
+    # Just reindexing 
+    if not is_automate_create_threads:
+        ''' finally'''
+        if es_t_client.indices.exists(es_target_index):
+            ''' update settings for the number of replica to 1, refresh_interval to null/'''
+            es_t_client.indices.put_settings(index=es_target_index, body= {
+                "refresh_interval" : None,
+                "number_of_replicas": 1
+            })
 
-        ''' set alias to target es cluster'''
-        if es_target_index in alias_dict.keys():
-            es_t_client.indices.put_alias(es_target_index, alias_dict.get(es_source_index))
+            ''' set alias to target es cluster'''
+            if es_target_index in alias_dict.keys():
+                es_t_client.indices.put_alias(es_target_index, alias_dict.get(es_source_index))
 
     EndTime_Job = datetime.now()
     Delay_Time = str((EndTime_Job - StartTime_Job).seconds) + '.' + str((EndTime_Job - StartTime_Job).microseconds).zfill(6)[:2]
