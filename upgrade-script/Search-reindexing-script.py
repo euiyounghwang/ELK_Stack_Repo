@@ -12,7 +12,7 @@ from datetime import datetime
 import pandas as pd
 import threading
 from threading import Thread
-from Search_Engine import Search
+from Search_Engine import (Search, Search_Utils)
 import logging
 import warnings
 from multiprocessing import Process
@@ -194,33 +194,26 @@ def work(es_source_client, es_target_client, es_version, src_idx, dest_idx, inde
     ''' Call to remain buffered '''
     es_obj_t.remained_buffered_json_to_es(version=int(es_version))
     ''' -------'''
-    
-    if int(es_version) == 5:
-        body = {
-            "query": { 
-                "match_all" : {}
-            }
-        }
-    else:    
-        body = {
-            "track_total_hits" : True,
-            "query": { 
-                "match_all" : {}
-            }
-        }
 
+    body = {
+            "query": { 
+                "match_all" : {}
+            }
+    }
+    
     es_t_client.indices.refresh(index=dest_idx)
 
+    ''' Transform query for the option "track_total_hits" based on the version of Elasticsearch'''
     rs = es_t_client.search(index=[dest_idx],
-        body=body
+        body=Search_Utils.get_query_dsl(query=body, version=int(es_version))
     )
 
     logging.info('-'*10)
-    print(type(rs["hits"]["total"]), str(rs["hits"]["total"]))
-    if isinstance(rs["hits"]["total"], int):
-        logging.info(f'Validation Search Size : {rs["hits"]["total"]:,}')
-    else:
-        logging.info(f'Validation Search Size : {rs["hits"]["total"]["value"]:,}')
+    
+    ''' Get total count'''
+    total_count = int(rs["hits"]["total"]) if isinstance(rs["hits"]["total"], int) else rs["hits"]["total"]["value"]
+    logging.info(f'Validation Search Size : {total_count:,}')
+    
     logging.info('-'*10)
 
     EndTime = datetime.now()
@@ -250,7 +243,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Index into Elasticsearch using this script")
     parser.add_argument('-e', '--es', dest='es', default="http://localhost:9209", help='host source')
     parser.add_argument('-t', '--ts', dest='ts', default="http://localhost:9292", help='host target')
-    parser.add_argument('-v', '--version', dest='version', default=5, help='es_version')
+    parser.add_argument('-v', '--version', dest='version', default=5, help='es_version for bulk')
     parser.add_argument('-s', '--source_index', dest='source_index', default="cp_recommendation_test", help='source_index')
     parser.add_argument('-y', '--type', dest='type', default="_doc", help='_type')
     parser.add_argument('-d', '--target_index', dest='target_index', default="test", help='target_index')
@@ -295,8 +288,8 @@ if __name__ == "__main__":
     # --
     
     ''' create threads automatically by using aggregation with time field'''
-    is_automate_create_threads = True
-    # is_automate_create_threads = False
+    # is_automate_create_threads = True
+    is_automate_create_threads = False
 
     thread_lists = []
 
@@ -329,11 +322,16 @@ if __name__ == "__main__":
             # }
         }
 
+        ''' Transform query for the option "track_total_hits" based on the version of Elasticsearch'''
+        query = Search_Utils.get_query_dsl(query=query, version=int(es_version))
+
         es_cnt = Search(host=es_source_host)
         es_client = es_cnt.get_es_instance()
 
         rs = es_client.search(index=[es_source_index],body=query)
-        total_count = int(rs["hits"]["total"])
+
+        ''' Get total count'''
+        total_count = int(rs["hits"]["total"]) if isinstance(rs["hits"]["total"], int) else rs["hits"]["total"]["value"]
 
         try:
             ''' create one threads and run one process for all data per index'''

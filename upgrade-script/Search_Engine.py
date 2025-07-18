@@ -14,7 +14,6 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 load_dotenv(dotenv_path="../.env") # will search for .env file in local folder and load variables 
 
 
-
 class Search():
     ''' elasticsearch class '''
     
@@ -188,6 +187,24 @@ class Search():
         json_str = json_str.replace("PACKAGINGCODE ", "PACKAGINGCODE")
         
         return json.loads(json_str)
+    
+
+    def transform_value_from_json(self, d):
+        ''' Lookup and change value in json dict'''
+        def get_recursive_nested_all(d):
+            if isinstance(d, list):
+                for i in d:
+                    get_recursive_nested_all(i)
+            elif isinstance(d, dict):
+                for k, v in d.items():
+                    if not isinstance(v, (list, dict)):
+                        d[k] = f"added to value : {v}"
+                    else:
+                        get_recursive_nested_all(v)
+            return d
+        
+        ''' call get_recursive_nested_all func'''
+        return get_recursive_nested_all(d)
 
     
     def buffered_json_to_es(self, raw_json, _index, _type, version=5):
@@ -208,19 +225,19 @@ class Search():
             for each_raw in raw_json:
 
                 ''' ES v.5 header'''
-                if version == 5:
+                if version < 8:
                     # _header = {'index': {'_index': _index, '_type' : _type, "_id" : each_raw['_id'], "op_type" : "create"}}
                     _header = {'index': {'_index': _index, '_type' : _type, "_id" : each_raw['_id']}}
-                
-                elif version == 8:
+
+                elif version >= 8:
                     ''' When indexing with ES v.8, _type is deleted and must be excluded. In Elasticsearch 8.0 and later, _type is completely removed in favor of indices and mapping types. '''
                     ''' So, when indexing with ES v.8, spark job also needs to remove the _type field.'''
-                    # _header = {'index': {'_index': _index, "_id" : each_raw['_id']}}
-                    _header = {'index': {'_index': _index, "_id" : each_raw['_id'], "op_type" : "create"}}
-                    # self.actions.append({'index': {'_index': _index, "_id" : each_raw['_id'], "op_type" : "create"}})
-                    
+                    _header = {'index': {'_index': _index, "_id" : each_raw['_id']}}
+                    # _header = {'index': {'_index': _index, "_id" : each_raw['_id'], "op_type" : "create"}}
+                                        
                 self.actions.append(_header)
                 # _body = self.transform_field_name(each_raw['_source'])
+                # _body = self.transform_value_from_json(each_raw['_source'])
                 _body = each_raw['_source']
                 # print(_body)
                 self.actions.append(_body)
@@ -363,3 +380,28 @@ class Search():
         
         except Exception as e:
             print('buffered_df_to_es exception : {}'.format(str(e)))
+
+
+
+class Search_Utils():
+    ''' Utils for Search class'''
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def get_query_dsl(query, version):
+        ''' 
+        The track_total_hits parameter in Elasticsearch controls whether the search API accurately calculates and
+        returns the total number of matching documents for a query
+        '''
+        if version < 7:
+            return query
+        
+        ''' 
+        Elasticsearch 7.x and later versions have track_total_hits set to 10000, 
+        Setting it to true provides an accurate count for all hits, but can impact performance 
+        '''
+        # query.update({"track_total_hits" : True})
+        # print(query)
+        return query
