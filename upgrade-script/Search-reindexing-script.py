@@ -243,10 +243,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Index into Elasticsearch using this script")
     parser.add_argument('-e', '--es', dest='es', default="http://localhost:9209", help='host source')
     parser.add_argument('-t', '--ts', dest='ts', default="http://localhost:9292", help='host target')
-    parser.add_argument('-v', '--version', dest='version', default=5, help='es_version for bulk')
     parser.add_argument('-s', '--source_index', dest='source_index', default="cp_recommendation_test", help='source_index')
     parser.add_argument('-y', '--type', dest='type', default="_doc", help='_type')
     parser.add_argument('-d', '--target_index', dest='target_index', default="test", help='target_index')
+    parser.add_argument('-v', '--version', dest='version', default=5, help='es_version for bulk')
+    parser.add_argument('-a', '--update_aliase', dest='update_aliase', default="false", help='update aliase to the ES index')
     args = parser.parse_args()
 
     StartTime_Job = datetime.now()
@@ -272,6 +273,11 @@ if __name__ == "__main__":
 
     if args.type:
         index_type = args.type
+
+    if args.update_aliase:
+        update_aliase = args.update_aliase
+        
+    update_aliase = True if str(update_aliase).upper() == "TRUE" else False
 
     '''
     if args.target_index:
@@ -531,19 +537,22 @@ if __name__ == "__main__":
 
     # Just reindexing 
     ''' finally'''
-    """
-    if es_t_client.indices.exists(es_target_index):
-        ''' update settings for the number of replica to 1, refresh_interval to null/'''
-        es_t_client.indices.put_settings(index=es_target_index, body= {
-                "refresh_interval" : None,
-                "number_of_replicas": 1
-        })
+    ''' update aliases to the ES indices'''
+    if update_aliase:
+        aliase_name = ""
+        if es_t_client.indices.exists(es_target_index):
+            ''' update settings for the number of replica to 1, refresh_interval to null/'''
+            es_t_client.indices.put_settings(index=es_target_index, body= {
+                    "refresh_interval" : None,
+                    "number_of_replicas": 1
+            })
 
-        ''' set alias to target es cluster'''
-        if es_target_index in alias_dict.keys():
-            es_t_client.indices.put_alias(es_target_index, alias_dict.get(es_source_index))
-    """
-
+            ''' set alias to target es cluster'''
+            if es_target_index in alias_dict.keys():
+                es_t_client.indices.put_alias(es_target_index, alias_dict.get(es_source_index))
+                aliase_name = alias_dict.get(es_source_index)
+        logging.info(f"Updated aliases to the ES indices [{es_target_index} with aliase ({aliase_name})]..")
+    
     EndTime_Job = datetime.now()
     Delay_Time = str((EndTime_Job - StartTime_Job).seconds) + '.' + str((EndTime_Job - StartTime_Job).microseconds).zfill(6)[:2]
 

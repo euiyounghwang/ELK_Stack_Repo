@@ -68,11 +68,11 @@ def work(es_source_host, es_target_host):
                 f.write(f"\n# Index : {ranked_index[k].get('each_index')}, docs : {ranked_index[k].get('count'):,}" + '\n')
                 if int(ranked_index[k].get('count')) > DOCS_CNT:
                     # print('wow', v)
-                    f.write(f"nohup python ./Search-reindexing-script.py --es {source_host} --source_index {ranked_index[k].get('each_index')} --type {ranked_index[k].get('get_type')} --ts {target_host} --target {ranked_index[k].get('each_index')} --version 8 > {ranked_index[k].get('get_type')}.log 2>&1 </dev/null &" + '\n')
+                    f.write(f"nohup python ./Search-reindexing-script.py --es {source_host} --source_index {ranked_index[k].get('each_index')} --type {ranked_index[k].get('get_type')} --ts {target_host} --target {ranked_index[k].get('each_index')} --version 8 --update_aliase true > {ranked_index[k].get('get_type')}.log 2>&1 </dev/null &" + '\n')
                     # f.write('\n')
                 else:
                     # print('nop, wow', v)
-                    f.write(f"python ./Search-reindexing-script.py --es {source_host} --source_index {ranked_index[k].get('each_index')} --type {ranked_index[k].get('get_type')} --ts {target_host} --target {ranked_index[k].get('each_index')} --version 8" + '\n')
+                    f.write(f"python ./Search-reindexing-script.py --es {source_host} --source_index {ranked_index[k].get('each_index')} --type {ranked_index[k].get('get_type')} --ts {target_host} --target {ranked_index[k].get('each_index')} --version 8 --update_aliase true" + '\n')
                     # f.write('\n')
 
             ''' create tracking counts on each ES indices before reindexing'''
