@@ -190,7 +190,7 @@ class Search():
         return json.loads(json_str)
 
     
-    def buffered_json_to_es(self, raw_json, _index, _type):
+    def buffered_json_to_es(self, raw_json, _index, _type, version=5):
         ''' https://opster.com/guides/elasticsearch/how-tos/optimizing-elasticsearch-bulk-indexing-high-performance/ '''
         ''' To further improve bulk indexing performance, you can use multiple threads or processes to send bulk requests concurrently. This can help you utilize the full capacity of your Elasticsearch cluster and reduce the time it takes to index large datasets.'''
         ''' When using multiple threads or processes, make sure to monitor the performance and resource usage of your Elasticsearch cluster. '''
@@ -208,15 +208,17 @@ class Search():
             for each_raw in raw_json:
 
                 ''' ES v.5 header'''
-                # _header = {'index': {'_index': _index, '_type' : _type, "_id" : each_raw['_id'], "op_type" : "create"}}
-                # _header = {'index': {'_index': _index, '_type' : _type, "_id" : each_raw['_id']}}
+                if version == 5:
+                    # _header = {'index': {'_index': _index, '_type' : _type, "_id" : each_raw['_id'], "op_type" : "create"}}
+                    _header = {'index': {'_index': _index, '_type' : _type, "_id" : each_raw['_id']}}
                 
-                ''' When indexing with ES v.8, _type is deleted and must be excluded. '''
-                ''' So, when indexing with ES v.8, spark job also needs to remove the _type field.'''
-                # _header = {'index': {'_index': _index, "_id" : each_raw['_id']}}
-                _header = {'index': {'_index': _index, "_id" : each_raw['_id'], "op_type" : "create"}}
-                # self.actions.append({'index': {'_index': _index, "_id" : each_raw['_id'], "op_type" : "create"}})
-                
+                elif version == 8:
+                    ''' When indexing with ES v.8, _type is deleted and must be excluded. In Elasticsearch 8.0 and later, _type is completely removed in favor of indices and mapping types. '''
+                    ''' So, when indexing with ES v.8, spark job also needs to remove the _type field.'''
+                    # _header = {'index': {'_index': _index, "_id" : each_raw['_id']}}
+                    _header = {'index': {'_index': _index, "_id" : each_raw['_id'], "op_type" : "create"}}
+                    # self.actions.append({'index': {'_index': _index, "_id" : each_raw['_id'], "op_type" : "create"}})
+                    
                 self.actions.append(_header)
                 # _body = self.transform_field_name(each_raw['_source'])
                 _body = each_raw['_source']

@@ -29,7 +29,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 lock = threading.Lock() 
 
 
-def work(es_source_client, es_target_client, src_idx, dest_idx, index_type, _shards_num=None, body=None, _crawl_type=None):
+def work(es_source_client, es_target_client, es_version, src_idx, dest_idx, index_type, _shards_num=None, body=None, _crawl_type=None):
     ''' 
     The best way to reindex is to use Elasticsearch's builtin Reindex API as it is well supported and resilient to known issues.
     The Elasticsaerch Reindex API uses scroll and bulk indexing in batches , and allows for scripted transformation of data. 
@@ -128,7 +128,7 @@ def work(es_source_client, es_target_client, src_idx, dest_idx, index_type, _sha
     # es_obj_t.create_index(dest_idx)
     
     # es_obj_t.buffered_df_to_es(df=pd.DataFrame.from_dict(rs['hits']['hits']), _index=dest_idx)
-    es_obj_t.buffered_json_to_es(raw_json=rs['hits']['hits'], _index=dest_idx, _type=index_type)
+    es_obj_t.buffered_json_to_es(raw_json=rs['hits']['hits'], _index=dest_idx, _type=index_type, version=int(es_version))
     
     while True:
         try:
@@ -137,7 +137,7 @@ def work(es_source_client, es_target_client, src_idx, dest_idx, index_type, _sha
             rs = es_client.scroll(scroll_id=scroll_id, scroll=scroll_time)
             if len(rs['hits']['hits']) > 0:
                 # logging.info(rs['hits']['hits'])
-                es_obj_t.buffered_json_to_es(raw_json=rs['hits']['hits'], _index=dest_idx, _type=index_type)
+                es_obj_t.buffered_json_to_es(raw_json=rs['hits']['hits'], _index=dest_idx, _type=index_type, version=int(es_version))
                 total_progressing += int(batch_size)
                 logging.info(f'Ingest data .. [_shards_num {_shards_num}]: {str(total_progressing)}')
             else:
@@ -195,12 +195,19 @@ def work(es_source_client, es_target_client, src_idx, dest_idx, index_type, _sha
     es_obj_t.remained_buffered_json_to_es()
     ''' -------'''
     
-    body = {
-        # "track_total_hits" : True,
-        "query": { 
-            "match_all" : {}
+    if int(es_version) == 5:
+        body = {
+            "query": { 
+                "match_all" : {}
+            }
         }
-    }
+    else:    
+        body = {
+            "track_total_hits" : True,
+            "query": { 
+                "match_all" : {}
+            }
+        }
 
     es_t_client.indices.refresh(index=dest_idx)
 
@@ -237,12 +244,13 @@ def work(es_source_client, es_target_client, src_idx, dest_idx, index_type, _sha
 if __name__ == "__main__":
     
     '''
-    (.venv) ➜  V5) python ./Search-reindexing-script.py --es http://localhost:9200 --source_index test --ts http://localhost:9201 --type test_property_name  --target_index test_tg
-    (.venv) ➜  V8) python-platform-engine git:(master) ✗ python ./Search-reindexing-script.py --es http://localhost:9200 --source_index test --ts https://localhost:9201
+    (.venv) ➜  V5) python ./upgrade-script/Search-reindexing-script.py --es http://localhost:9200 --source_index test --ts http://localhost:9201 --type test_property_name --target_index test_tg --version 5
+    (.venv) ➜  V8) python ./upgrade-script/Search-reindexing-script.py --es http://localhost:9200 --source_index test --type type --ts https://localhost:9201 --version 8
     '''
     parser = argparse.ArgumentParser(description="Index into Elasticsearch using this script")
     parser.add_argument('-e', '--es', dest='es', default="http://localhost:9209", help='host source')
     parser.add_argument('-t', '--ts', dest='ts', default="http://localhost:9292", help='host target')
+    parser.add_argument('-v', '--version', dest='version', default=5, help='es_version')
     parser.add_argument('-s', '--source_index', dest='source_index', default="cp_recommendation_test", help='source_index')
     parser.add_argument('-y', '--type', dest='type', default="_doc", help='_type')
     parser.add_argument('-d', '--target_index', dest='target_index', default="test", help='target_index')
@@ -259,6 +267,9 @@ if __name__ == "__main__":
         
     if args.ts:
         es_target_host = args.ts
+
+    if args.version:
+        es_version = args.version
         
     if args.source_index:
         es_source_index = args.source_index
@@ -327,8 +338,8 @@ if __name__ == "__main__":
         try:
             ''' create one threads and run one process for all data per index'''
             if search_shards < 2:
-                th = Thread(target=work, args=(es_source_host, es_target_host, es_source_index, es_target_index, index_type, None, query, "Single Threads"))
-                # th = Process(target=work, args=(es_source_host, es_target_host, es_source_index, es_target_index, index_type, None, "Single Threads")))
+                th = Thread(target=work, args=(es_source_host, es_target_host, es_version, es_source_index, es_target_index, index_type, None, query, "Single Threads"))
+                # th = Process(target=work, args=(es_source_host, es_target_host, es_version, es_source_index, es_target_index, index_type, None, "Single Threads")))
                 th.start()
                 thread_lists.append(th)
             
@@ -337,8 +348,8 @@ if __name__ == "__main__":
                 for idx in range(search_shards):
                     ''' GET index/_search?preference=_shards:0 '''
                     _shards_num="_shards:{}".format(str(idx))
-                    th = Thread(target=work, args=(es_source_host, es_target_host, es_source_index, es_target_index, index_type, _shards_num, query, "Five Threads"))
-                    # th = Process(target=work, args=(es_source_host, es_target_host, es_source_index, es_target_index, index_type, _shards_num, query, "Five Threads"))
+                    th = Thread(target=work, args=(es_source_host, es_target_host, es_version, es_source_index, es_target_index, index_type, _shards_num, query, "Five Threads"))
+                    # th = Process(target=work, args=(es_source_host, es_target_host, es_version, es_source_index, es_target_index, index_type, _shards_num, query, "Five Threads"))
                     th.start()
                     thread_lists.append(th)
 
@@ -438,7 +449,7 @@ if __name__ == "__main__":
                             }
                         }
                     }
-                    th = Thread(target=work, args=(es_source_host, es_target_host, es_source_index, es_target_index, index_type, None, query, "{}/{} threads..".format(is_aggs_mode, 'ADDTS_not_exist')))
+                    th = Thread(target=work, args=(es_source_host, es_target_host, es_version, es_source_index, es_target_index, index_type, None, query, "{}/{} threads..".format(is_aggs_mode, 'ADDTS_not_exist')))
                     th.start()
                     thread_lists.append(th)
                     # logging.info(query)
@@ -496,7 +507,7 @@ if __name__ == "__main__":
                     logging.info(f"es_source_index : {es_source_index}")
                     logging.info(f"total_count : {total_count}, compared_total_count = {compared_total_count}")
 
-                    th = Thread(target=work, args=(es_source_host, es_target_host, es_source_index, es_target_index, index_type, None, query, "{}/{} threads..".format(is_aggs_mode, len(date_range))))
+                    th = Thread(target=work, args=(es_source_host, es_target_host, es_version, es_source_index, es_target_index, index_type, None, query, "{}/{} threads..".format(is_aggs_mode, len(date_range))))
                     # th = Process(target=work, args=(es_source_host, es_target_host, es_source_index, es_target_index, index_type, None, query, "[{}] : {} threads..".format(is_aggs_mode, len(date_range))))
                     th.start()
                     thread_lists.append(th)
