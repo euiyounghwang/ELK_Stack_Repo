@@ -49,7 +49,7 @@ python ./upgrade-script/reindexing-command-generate-script.py --es http://localh
 ./source-es-reindexing-run.sh http://localhost:9200 https://localhost:9201
 
 # reindexing using python script
-python ./Search-reindexing-script.py --es http://localhost:9200 --source_index es_pipeline_upload_test_om --type test --ts https://localhost:9201  --target es_pipeline_upload_test_om --version 8
+python ./Search-reindexing-script.py --es http://localhost:9200 --source_index es_pipeline_upload_test_om --type test --ts https://localhost:9201  --target es_pipeline_upload_test_om --version 8 --update_aliase true
 
 
 4) Validate the numer of docs for all indices (Compare the total count using between two clusters )
