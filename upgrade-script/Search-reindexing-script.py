@@ -192,7 +192,7 @@ def work(es_source_client, es_target_client, es_version, src_idx, dest_idx, inde
     
     ''' -------'''
     ''' Call to remain buffered '''
-    es_obj_t.remained_buffered_json_to_es()
+    es_obj_t.remained_buffered_json_to_es(version=int(es_version))
     ''' -------'''
     
     if int(es_version) == 5:
@@ -295,8 +295,8 @@ if __name__ == "__main__":
     # --
     
     ''' create threads automatically by using aggregation with time field'''
-    # is_automate_create_threads = True
-    is_automate_create_threads = False
+    is_automate_create_threads = True
+    # is_automate_create_threads = False
 
     thread_lists = []
 
@@ -532,18 +532,19 @@ if __name__ == "__main__":
     es_t_client = es_script.get_es_instance()
 
     # Just reindexing 
-    if not is_automate_create_threads:
-        ''' finally'''
-        if es_t_client.indices.exists(es_target_index):
-            ''' update settings for the number of replica to 1, refresh_interval to null/'''
-            es_t_client.indices.put_settings(index=es_target_index, body= {
+    ''' finally'''
+    """
+    if es_t_client.indices.exists(es_target_index):
+        ''' update settings for the number of replica to 1, refresh_interval to null/'''
+        es_t_client.indices.put_settings(index=es_target_index, body= {
                 "refresh_interval" : None,
                 "number_of_replicas": 1
-            })
+        })
 
-            ''' set alias to target es cluster'''
-            if es_target_index in alias_dict.keys():
-                es_t_client.indices.put_alias(es_target_index, alias_dict.get(es_source_index))
+        ''' set alias to target es cluster'''
+        if es_target_index in alias_dict.keys():
+            es_t_client.indices.put_alias(es_target_index, alias_dict.get(es_source_index))
+    """
 
     EndTime_Job = datetime.now()
     Delay_Time = str((EndTime_Job - StartTime_Job).seconds) + '.' + str((EndTime_Job - StartTime_Job).microseconds).zfill(6)[:2]

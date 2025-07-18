@@ -295,27 +295,23 @@ class Search():
             pass
 
 
-    def remained_buffered_json_to_es(self):
+    def remained_buffered_json_to_es(self, version):
         ''' push remain buffered json to target cluster'''
         
         self.logging_show_msg(f"remained_buffered_json_to_es.. counts : {len(self.actions)}")
         
         Bulk_StartTime = datetime.now()
         response = self.es_client.bulk(body=self.actions)
-        ''' es v5'''
-        # if str(response['errors']).lower() == 'true':
-        ''' es v8'''
+
         if 'errors' in response:
-        # if response['errors']:
-            # logging.error(response)
-            print('\n\n\n\n')
-            print(response)
-            self.export_file(self.target_idx, str(response))
-            print('\n\n\n\n')
-            pass
-        else:
-            logging.info("** remain indexing ** : {}".format(len(response['items'])))
-            
+            if str(response['errors']).lower() == 'true':
+                print('\n\n\n\n')
+                print(response)
+                self.export_file(self.target_idx, str(response))
+                print('\n\n\n\n')
+                pass
+            else:
+                logging.info("** remain indexing ** : {}".format(len(response['items'])))
     
         Bulk_EndTime = datetime.now()
         ''' accumulate response_total_time'''
