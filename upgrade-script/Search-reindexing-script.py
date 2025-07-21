@@ -237,8 +237,8 @@ def work(es_source_client, es_target_client, es_version, src_idx, dest_idx, inde
 if __name__ == "__main__":
     
     '''
-    (.venv) ➜  V5) python ./upgrade-script/Search-reindexing-script.py --es http://localhost:9200 --source_index test --ts http://localhost:9201 --type test_property_name --target_index test_tg --version 5
-    (.venv) ➜  V8) python ./upgrade-script/Search-reindexing-script.py --es http://localhost:9200 --source_index test --type type --ts https://localhost:9201 --version 8
+    (.venv) ➜  V5) python ./upgrade-script/Search-reindexing-script.py --es http://localhost:9200 --source_index test --ts http://localhost:9201 --type test_property_name --target_index test_tg --version 5 --update_aliase false
+    (.venv) ➜  V8) python ./upgrade-script/Search-reindexing-script.py --es http://localhost:9200 --source_index test --type type --ts https://localhost:9201 --version 8 --update_aliase false
     '''
     parser = argparse.ArgumentParser(description="Index into Elasticsearch using this script")
     parser.add_argument('-e', '--es', dest='es', default="http://localhost:9209", help='host source')
