@@ -402,10 +402,13 @@ class Search_Utils():
         Elasticsearch 7.x and later versions have track_total_hits set to 10000, 
         Setting it to true provides an accurate count for all hits, but can impact performance 
         '''
-        # query.update({"track_total_hits" : True})
+        query.update({"track_total_hits" : True})
         # print(query)
         return query
 
+    def get_total_number_of_matching_documents(param_total_count):
+        ''' Get the total number of matching documents for a query'''
+        return int(param_total_count) if isinstance(param_total_count, int) else int(param_total_count["value"])
 
 
 class QueryBuilder:

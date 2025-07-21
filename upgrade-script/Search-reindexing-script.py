@@ -211,7 +211,8 @@ def work(es_source_client, es_target_client, es_version, src_idx, dest_idx, inde
     logging.info('-'*10)
     
     ''' Get total count'''
-    total_count = int(rs["hits"]["total"]) if isinstance(rs["hits"]["total"], int) else rs["hits"]["total"]["value"]
+    # total_count = int(rs["hits"]["total"]) if isinstance(rs["hits"]["total"], int) else rs["hits"]["total"]["value"]
+    total_count = Search_Utils.get_total_number_of_matching_documents(rs["hits"]["total"])
     logging.info(f'Validation Search Size : {total_count:,}')
     
     logging.info('-'*10)
@@ -329,7 +330,7 @@ if __name__ == "__main__":
         }
 
         ''' Transform query for the option "track_total_hits" based on the version of Elasticsearch'''
-        query = Search_Utils.get_query_dsl(query=query, version=int(es_version))
+        # query = Search_Utils.get_query_dsl(query=query, version=int(es_version))
 
         es_cnt = Search(host=es_source_host)
         es_client = es_cnt.get_es_instance()
@@ -337,7 +338,8 @@ if __name__ == "__main__":
         rs = es_client.search(index=[es_source_index],body=query)
 
         ''' Get total count'''
-        total_count = int(rs["hits"]["total"]) if isinstance(rs["hits"]["total"], int) else rs["hits"]["total"]["value"]
+        # total_count = int(rs["hits"]["total"]) if isinstance(rs["hits"]["total"], int) else int(rs["hits"]["total"]["value"])
+        total_count = Search_Utils.get_total_number_of_matching_documents(rs["hits"]["total"])
 
         try:
             ''' create one threads and run one process for all data per index'''
