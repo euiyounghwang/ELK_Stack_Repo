@@ -875,24 +875,31 @@ elasticsearch.hosts: ["https://localhost1.test.com:9201", "https://localhost2.te
 elasticsearch.username: "kibanaserver"
 elasticsearch.password: "kibanaserver"
 
-elasticsearch.requestHeadersWhitelist: ["Authorization", "sgtenant"]
+
+elasticsearch.requestHeadersWhitelist: ["Authorization", "sgtenant", "security_tenant"]
 
 #elasticsearch.ssl.verificationMode: none
-elasticsearch.ssl.certificateAuthorities: ["/apps/kibana/kibana-8.17.0/config/certs/root-ca.pem"]
+#elasticsearch.ssl.verificationMode: certificate
+elasticsearch.ssl.certificateAuthorities: ["/apps/kibana/kibana-8.17.0/config/certs/local-es8-ca.pem"]
+elasticsearch.ssl.alwaysPresentCertificate: true
+
 
 security.showInsecureClusterWarning: false
 searchguard.allow_client_certificates: true
-
-# Kibana can also authenticate to Elasticsearch via "service account to
-
-# is proxied through the Kibana server.
-elasticsearch.username: "kibanaserver"
-elasticsearch.password: "kibanaserver"
+searchguard.cookie.secure: true
 
 
-elasticsearch.ssl.verificationMode: none
-elasticsearch.requestHeadersWhitelist: ["Authorization", "sgtenant"]
-security.showInsecureClusterWarning: false
+xpack.reporting.roles.enabled: false
+xpack.infra.enabled: false
+xpack.canvas.enabled: false
+xpack.observability.enabled: false
+xpack.reporting.capture.browser.chromium.disableSandbox: false
+xpack.security.authc.http.enabled: false
+
+
+# Specifies the path where Kibana creates the process ID file.
+pid.file: /apps/kibana/kibana-8.17.0/kibana.pid
+
 ```
 
 # - LOGO (/apps/kibana/kibana-8.12.2/plugins/searchguard/public/assets)
@@ -907,6 +914,12 @@ nohup sudo /apps/kibana/kibana-8.17.0/bin/kibana --allow-root &> /dev/null &
 
 sudo /apps/kibana/latest/bin/kibana --allow-root &
 sudo netstat -nlp | grep :5601
+
+cd /apps
+sudo vi . puppeteerrc
+skipDownload: true
+sudo chown -R kibana:kibana .puppeteerrc
+
 ```
 
 
