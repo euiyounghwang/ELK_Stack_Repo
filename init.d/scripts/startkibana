@@ -1,3 +1,23 @@
-cd /apps/kibana
+
+#cd /apps/kibana
 #/apps/kibana/latest/bin/kibana
-nohup /apps/kibana/latest/bin/kibana &> /dev/null &
+#nohup /apps/kibana/latest/bin/kibana &> /dev/null &
+
+service_name='/apps/kibana/latest/bin/'
+
+PID=$(ps -ef | grep $service_name | grep -v grep)
+test=$?
+if [ $test -eq 0 ]
+then
+  PID=$(ps -ef | grep $service_name | grep -v grep | tr -s ' ' | cut -d " " -f2)
+  echo Kibana is Running as PID: $PID
+  #kill -9 $PID
+else
+  echo "Starting the Kibana.."
+  nohup /apps/kibana/latest/bin/kibana &> /dev/null &
+  #/apps/kibana/latest/bin/kibana
+  sleep 5
+  PID=$(ps -ef | grep $service_name | grep -v grep | tr -s ' ' | cut -d " " -f2)
+  echo Kibana is running as PID: $PID
+fi
+
