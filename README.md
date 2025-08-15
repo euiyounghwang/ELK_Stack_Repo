@@ -333,7 +333,98 @@ Admin certificates
 
 - Root CA (Certificate Authority) is a certificate that will be used to sign all other certificates within a system. In other words, Root CA is an issuer of node, client and admin certificates
 - Next, we generate node certificate issued by the Root CA. We start with a similar config file (country and organisational unit fields may be copied) which additionally contains:
+- If using a publicly trusted SSL certificate for your Elasticsearch cluster, you can often use the certifi package, which provides a default set of common CA certificates.
+If using a self-signed certificate or a certificate signed by a private CA, you will need to obtain the CAs root certificate (and any intermediate certificates) in PEM format and save them to a file.
+- You need to pass the path to the CA root certificate which was used to sign the server certificate offered by that Elasticsearch node. This way, the client will be able to trust the server connection.
+- To connect to Elasticsearch using the Python client with CA certificates and basic authentication, the Elasticsearch client needs to be instantiated with specific parameters.
+- When connecting to an Elasticsearch instance with the Python elasticsearch client library, especially when SSL/TLS is enabled on the Elasticsearch server, you often need to provide the Certificate Authority (CA) certificate in PEM format to ensure secure and verified communication.
+- Basic authentication is a simple authentication scheme built into the HTTP protocol. The client sends HTTP requests with the Authorization header that contains a base64-encoded string username:password
 
+```bash
+
+# Python
+from elasticsearch import Elasticsearch
+
+ELASTIC_USERID = "your_userid"
+ELASTIC_PASSWORD = "your_password"  # Replace with your actual password
+CA_CERTS_PATH = "/path/to/your/http_ca.pem"  # Path to your CA certificate file in PEM format, The ca_certs parameter expects a file in PEM (Privacy-Enhanced Mail) format. This is a common format for storing cryptographic keys and certificates.
+
+try:
+  client = Elasticsearch(
+      "https://your_elasticsearch_host:9200",  # Replace with your Elasticsearch host and port
+      ca_certs=CA_CERTS_PATH,
+      basic_auth=(ELASTIC_USERID, ELASTIC_PASSWORD)  # This parameter sets up basic HTTP authentication using the provided username and password.e
+  )
+
+ # Verify the connection
+  info = client.info()
+  print("Connected to Elasticsearch:")
+  print(info)
+
+except Exception as e:
+  print(f"Error connecting to Elasticsearch: {e}")
+
+# c#
+using Nest;
+using System;
+using System.Security.Cryptography.X509Certificates;
+
+public class ElasticsearchConnection
+{
+    public static void Main(string[] args)
+    {
+        // Replace with your Elasticsearch URL
+        var uri = new Uri("https://your-elasticsearch-host:9200"); 
+
+        // Replace with your username and password for basic authentication
+        var username = "your_username";
+        var password = "your_password";
+
+        // Replace with the path to your CA certificate file (e.g., in PEM format)
+        var caCertPath = @"C:\path\to\your\ca_certificate.pem"; 
+
+        // Create ConnectionSettings with basic authentication and CA certificate
+        var settings = new ConnectionSettings(uri)
+            .BasicAuthentication(username, password)
+            .ServerCertificateValidationCallback((sender, certificate, chain, sslPolicyErrors) => 
+            {
+                // Load the CA certificate
+                var caCert = new X509Certificate2(caCertPath);
+
+                // Build a chain for the server certificate
+                var certChain = new X509Chain();
+                certChain.Build(certificate as X509Certificate2);
+
+                // Check if the server certificate is issued by the trusted CA
+                foreach (var element in certChain.ChainElements)
+                {
+                    if (element.Certificate.Thumbprint == caCert.Thumbprint)
+                    {
+                        return true; // Certificate is trusted
+                    }
+                }
+                return false; // Certificate is not trusted or validation failed
+            });
+
+        // Create the Elasticsearch client
+        var client = new ElasticClient(settings);
+
+        // Example: Ping the cluster to verify connection
+        var response = client.Ping();
+
+        if (response.IsValid)
+        {
+            Console.WriteLine("Successfully connected to Elasticsearch!");
+        }
+        else
+        {
+            Console.WriteLine($"Failed to connect to Elasticsearch: {response.DebugInformation}");
+        }
+    }
+}
+
+
+```
 
 -- Certificate Decoder
 openssl x509 -enddate -noout -in ./root-ca.pem
