@@ -331,7 +331,7 @@ Client certificates
 Admin certificates
 - which basically are client certificates that have elevated rights to perform administrative tasks.
 
-- Root CA (Certificate Authority) is a certificate that will be used to sign all other certificates within a system. In other words, Root CA is an issuer of node, client and admin certificates
+- Root CA (Certificate Authority) is a certificate that will be used to sign all other certificates within a system. In other words, Root CA is an issuer of node, client and admin certificates. A Root CA (Certificate Authority) certificate plays a crucial role in securing Elasticsearch deployments, particularly when enabling TLS/SSL encryption for communication within the cluster and with clients.
 - Next, we generate node certificate issued by the Root CA. We start with a similar config file (country and organisational unit fields may be copied) which additionally contains:
 - If using a publicly trusted SSL certificate for your Elasticsearch cluster, you can often use the certifi package, which provides a default set of common CA certificates.
 If using a self-signed certificate or a certificate signed by a private CA, you will need to obtain the CAs root certificate (and any intermediate certificates) in PEM format and save them to a file.
