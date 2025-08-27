@@ -340,6 +340,11 @@ If using a self-signed certificate or a certificate signed by a private CA, you 
 - When connecting to an Elasticsearch instance with the Python elasticsearch client library, especially when SSL/TLS is enabled on the Elasticsearch server, you often need to provide the Certificate Authority (CA) certificate in PEM format to ensure secure and verified communication.
 - Basic authentication is a simple authentication scheme built into the HTTP protocol. The client sends HTTP requests with the Authorization header that contains a base64-encoded string username:password
 
+- Openssl allows us to retrieve the ssl expiration date from the remote serivce url. The openssl "s_client" command is a powerful tool for interacting with 
+SSL/TLS servers 
+  - openssl s_client -connect localhost:9200 -showcerts 
+  - echo | openssl s_client -connect localhost:8480 | openssl x509 -noout -dates
+
 ```bash
 
 # Python
