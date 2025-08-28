@@ -550,10 +550,10 @@ if __name__ == "__main__":
             })
 
             ''' set alias to target es cluster'''
-            if es_target_index in alias_dict.keys():
-                es_t_client.indices.put_alias(es_target_index, alias_dict.get(es_source_index))
-                aliase_name = alias_dict.get(es_source_index)
-                logging.info(f"Updated aliases to the ES indices [{es_target_index} with aliase ({aliase_name})]..")
+            # if es_target_index in alias_dict.keys():
+            #     es_t_client.indices.put_alias(es_target_index, alias_dict.get(es_source_index))
+            #     aliase_name = alias_dict.get(es_source_index)
+            #     logging.info(f"Updated aliases to the ES indices [{es_target_index} with aliase ({aliase_name})]..")
     
     EndTime_Job = datetime.now()
     Delay_Time = str((EndTime_Job - StartTime_Job).seconds) + '.' + str((EndTime_Job - StartTime_Job).microseconds).zfill(6)[:2]

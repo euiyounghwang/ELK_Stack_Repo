@@ -42,7 +42,7 @@ PUT _template/idx_log_default
 python ./upgrade-script/migrate-index-script.py --es http://localhost:9200 --ts https://localhost:9201
 
 2) Create reindexing command
-python ./upgrade-script/reindexing-command-generate-script.py --es http://localhost:9200
+python ./upgrade-script/reindexing-command-generate-script.py --es http://localhost:9200 --ts http://localhost:9200
 
 3) Reindexing
 # reindexing using shell script
