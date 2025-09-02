@@ -86,7 +86,7 @@ def work(es_source_client, es_target_client):
             #     logging.info(f"each_index - {each_index}, each_mapping : {each_mapping}")
                 
             return json.loads(json.dumps(each_mapping).replace('"CONSOLIDATIONID": {"type": "integer"}','"CONSOLIDATIONID": {"type": "double"}')
-                            #   .replace('"PRINTBATCHID": {"type": "integer"}','"PRINTBATCHID": {"type": "double"}')
+                              .replace('"PRINTBATCHID": {"type": "integer"}','"PRINTBATCHID": {"type": "double"}')
                               )
 
         def get_recursive_nested_all(d):
