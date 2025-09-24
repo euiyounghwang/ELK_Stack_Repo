@@ -6,3 +6,9 @@ jupyter-workflow/*.csv
 upgrade-script/output/
 upgrade-script/__pycache__/
 .vscode/
+upgrade-script/csharp/certs/
+upgrade-script/csharp/esclient/.env
+upgrade-script/csharp/esclient/bin/
+upgrade-script/csharp/esclient/obj/
+upgrade-script/csharp/test/bin/
+upgrade-script/csharp/test/obj/
