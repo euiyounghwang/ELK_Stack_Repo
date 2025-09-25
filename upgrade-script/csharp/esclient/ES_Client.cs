@@ -138,9 +138,10 @@ public class ElasticsearchConnection
         var password = Env.GetString("BASIC_AUTH_PASSWORD");
 
         // Replace with the path to your CA certificate file (e.g., in PEM format)
-        var caCertPath = @$"{Env.GetString("CERT_PATH")}\dev\dev-es8-ca.pem";
+        var caCertPath = @$"{Env.GetString("CERT_PATH")}";
+        // var caCertPath = @$"{Env.GetString("CERT_PATH")}\dev\dev-es8-ca.pem";
         // var caCertPath = @$"{Env.GetString("CERT_PATH")}\qa13_new\qa13-es8-ca.pem";
-        
+
         // C# application can be configured to use specific node certificates for secure communication with your Elasticsearch cluster.
         // var node1CertPath = @$"{Env.GetString("CERT_PATH")}\dev\dev-node-1.pem";
         // var node2CertPath = @$"{Env.GetString("CERT_PATH")}\dev\dev-node-2.pem";
