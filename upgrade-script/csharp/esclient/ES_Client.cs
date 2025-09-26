@@ -212,6 +212,7 @@ public class ElasticsearchConnection
                 // Check if the certificate from the remote secure ES cluster is the expected CA 
                 if (certificate.Issuer == caCert.Subject)
                 {
+                    Console.WriteLine($"caCert : [{caCert}]");
                     return true;
                 }
 
