@@ -103,8 +103,9 @@ def work(es_source_client, es_target_client):
                         get_recursive_nested_all(v)
 
             ''' unnecessary field should removed by this function like "query"'''
-            if 'query' in d:
-                del d['query']
+            if d is not None:
+                if 'query' in d:
+                    del d['query']
             return d
 
         # logging.info(f"index : {each_index}, mapping = {json.dumps(es_client.indices.get_mapping(index=each_index), indent=2)}")
