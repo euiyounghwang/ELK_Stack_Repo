@@ -21,21 +21,96 @@ PUT _template/idx_default
 }
 
 
+/* Index Template Update */
+PUT /_index_template/logstash
+{
+  "index_patterns": [
+    "logstash-*"
+  ],
+  "template": {
+    "settings": {
+      "index": {
+        "number_of_shards": "5",
+        "number_of_replicas" : "1",
+        "refresh_interval": null
+      }
+    },
+    "mappings": {
+      "dynamic_templates": [
+        {
+          "message_field": {
+            "path_match": "message",
+            "mapping": {
+              "norms": false,
+              "type": "text"
+            },
+            "match_mapping_type": "string"
+          }
+        },
+        {
+          "string_fields": {
+            "mapping": {
+              "norms": false,
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "ignore_above": 256,
+                  "type": "keyword"
+                }
+              }
+            },
+            "match_mapping_type": "string",
+            "match": "*"
+          }
+        }
+      ],
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "geoip": {
+          "dynamic": true,
+          "properties": {
+            "ip": {
+              "type": "ip"
+            },
+            "latitude": {
+              "type": "half_float"
+            },
+            "location": {
+              "type": "geo_point"
+            },
+            "longitude": {
+              "type": "half_float"
+            }
+          }
+        },
+        "@version": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
+  
+
 /* logstash,packetbeat Indices Template for the creation of ES indices */
 PUT _template/idx_log_default
 {
   "index_patterns": [
-    "logstash-*",
-    "packet*"
+    "packet*",
+    "es_pipeline_upload_test*"
   ],
   "settings": {
     "number_of_shards": 5,
-    "number_of_replicas": 1
+    "number_of_replicas": 1,
+    "refresh_interval" : null
   },
   "mappings": {
     "properties": {}
   }
 }
+
 
 # Reindexing Step (From ES v.5.6.4 to ES v.8.12.2)
 1) Create index all to new cluster
