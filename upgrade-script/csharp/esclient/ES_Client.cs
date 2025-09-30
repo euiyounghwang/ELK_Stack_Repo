@@ -247,24 +247,25 @@ public class ElasticsearchConnection
                 {
                     Console.WriteLine($"Failed to get cluster health: {healthResponse.DebugInformation}");
                 }
+                Console.WriteLine("**");
 
-                /*
+                Console.WriteLine("\n**");
                 CatResponse<CatIndicesRecord> catIndicesResponse = client.Cat.Indices();
                 if (catIndicesResponse.IsValid)
                 {
                     var indexNames = catIndicesResponse.Records.Select(record => record.Index).ToList();
 
                     Console.WriteLine($"List of Elasticsearch Indices with account: {username}");
+                    Console.Write("- ");
                     foreach (var indexName in indexNames)
                     {
-                        Console.WriteLine($"- {indexName}");
+                        Console.Write($"{indexName}, ");
                     }
                 }
                 else
                 {
                     Console.WriteLine($"Error retrieving indices: {catIndicesResponse.DebugInformation}");
                 }
-                */
             }
             catch (Exception ex)
             {
@@ -275,7 +276,7 @@ public class ElasticsearchConnection
         {
             Console.WriteLine($"Failed to connect to Elasticsearch: {response.DebugInformation}");
         }
-        Console.WriteLine("**");
+        Console.WriteLine("\n**");
     }
 
     public static void Main(string[] args)
