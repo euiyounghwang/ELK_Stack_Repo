@@ -3,6 +3,8 @@
 #/apps/kibana/latest/bin/kibana
 #nohup /apps/kibana/latest/bin/kibana &> /dev/null &
 
+# Copy Kibana logo image 
+
 service_name='/apps/kibana/latest/bin/'
 
 PID=$(ps -ef | grep $service_name | grep -v grep)
