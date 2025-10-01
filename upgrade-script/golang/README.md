@@ -27,3 +27,47 @@ If you’re starting a new project, create a new module by running the following
 - go run main.go
 - go build
 - compile a go file/project on windows for Linux: `env GOOS=linux go build -o ./bin/prometheus` (Run this command `chmod 755 filname` after copying to linux server)
+
+Elasticsearch with golang
+- https://opensearch.org/docs/latest/clients/rust/
+
+Transform tools: An online playground to convert JSON to Go Struct.
+- In Go, a struct is a user-defined type that groups together fields of different types into a single unit. Structs are similar to classes in other languages, but they do not support inheritance
+- https://transform.tools/json-to-go
+
+
+
+GoConvey(https://github.com/smartystreets/goconvey) supports Go's native testing package. Neither the web UI nor the DSL are required; you can use either one independently. Directly integrates with go test; Fully-automatic web UI (works with native Go tests, too)
+```bash
+go get github.com/smartystreets/goconvey
+go install github.com/smartystreets/goconvey
+
+cd /Users/euiyoung.hwang/go/pkg/mod/github.com/smartystreets/goconvey@v1.8.1
+
+go-search_engine git:(master) ✗ /Users/euiyoung.hwang/go/bin/goconvey --workDir=$SCRIPTDIR/tests
+go-search_engine git:(master) ✗ ./go_convey.sh                                                                                              
+2023/12/27 14:07:14 goconvey.go:116: GoConvey server: 
+2023/12/27 14:07:14 goconvey.go:121:   version: v1.8.1
+2023/12/27 14:07:14 goconvey.go:122:   host: 127.0.0.1
+2023/12/27 14:07:14 goconvey.go:123:   port: 8080
+```
+
+Go Test
+- Run this command `./go_convey.sh` or `goconvey --workDir=$SCRIPTDIR/tests --port=7090` or `go test -v ./tests/`
+```bash
+=== RUN   TestHealthCheckHandler
+&{GET /metrics HTTP/1.1 1 1 map[] {} <nil> 0 [] false example.com map[] map[] <nil> map[] 192.0.2.1:1234 /metrics <nil> <nil> <nil>  {{}} <nil> [] map[]}
+&{200 map[]  false <nil> map[] false}
+--- PASS: TestHealthCheckHandler (0.00s)
+PASS
+ok      prometheus.com/tests    (cached)
+```
+
+# Docker
+- docker images
+- When you type docker images on your local system, you might see a list of all the Docker images on your system. Those can be “normal” ones with a proper repository name and tag or “dangling” ones, indicated via the <none> text 
+- In this case, you can use the following concise command to clean up your space for none tags: `docker rmi $(docker images -f "dangling=true" -q)`
+```bash
+- docker rmi $(docker images -f "dangling=true" -q)
+Deleted: sha256:80656b6d54a746420b701ae14afeafe0cc2127f948f8accf356ec66aa2115191
+...

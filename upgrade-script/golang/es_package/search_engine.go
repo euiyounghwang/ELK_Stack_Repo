@@ -1,35 +1,61 @@
 package es_package
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
+	"es_upgrade/repository"
+
 	"github.com/elastic/go-elasticsearch/v7"
 )
 
 func Get_es_search(es *elasticsearch.Client) {
-	fmt.Printf("**\n")
-	fmt.Printf("Get_es_search")
+	fmt.Printf("\n**\n")
+	fmt.Printf("Get_es_search [%s]", os.Getenv("BASIC_AUTH_USERNAME"))
 	// fmt.Println(es.Info())
 	fmt.Printf("**\n")
 }
 
 func Get_es_info(es *elasticsearch.Client) {
-	// Ping the cluster to verify connection
-	res, err := es.Info()
+	/*
+		// Ping the cluster to verify connection
+		res, err := es.Info()
+		if err != nil {
+			log.Fatalf("Error getting response: %s", err)
+		}
+		defer res.Body.Close()
+	*/
+
+	res, err := es.Cluster.Health(es.Cluster.Health.WithPretty()) // WithPretty() for formatted output
 	if err != nil {
-		log.Fatalf("Error getting response: %s", err)
+		// Handle error
 	}
 	defer res.Body.Close()
 
 	fmt.Printf("**\n")
-	output := fmt.Sprintf("Successfully connected to Elasticsearch! [%s]\n", os.Getenv("BASIC_AUTH_USERNAME"))
+	output := fmt.Sprintf("Successfully connected to Elasticsearch! [%s]\n", os.Getenv("ES_NODE_1"))
 	fmt.Print(output)
-	fmt.Printf("**\n")
+	// fmt.Printf("**\n")
 	body, _ := ioutil.ReadAll(res.Body)
-	fmt.Println(string(body))
+	// fmt.Println(string(body))
+
+	response_map := repository.ES_Cluster{}
+	if err := json.Unmarshal(body, &response_map); err != nil {
+		// do error check
+		log.Println(err)
+	}
+
+	// for i, rows := range response_map. {
+	// }
+	fmt.Printf("Cluster Name: %s\n", response_map.ClusterName)
+	fmt.Printf("Cluster Health: %s\n", response_map.Status)
+	fmt.Printf("Number of Nodes: %d\n", response_map.NumberOfNodes)
+	fmt.Printf("Active Shards: %d\n", response_map.ActiveShards)
+	fmt.Printf("Relocating Shards: %d\n", response_map.RelocatingShards)
+	fmt.Printf("ActiveShardsPercentAsNumber: %.2f\n", response_map.ActiveShardsPercentAsNumber)
 }
 
 func Get_elasticsearch() *elasticsearch.Client {
