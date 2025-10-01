@@ -21,11 +21,15 @@ OUTPUT : "111", "222"
 func Build_split_string_array(s string) string {
 	var sb strings.Builder
 	s_array := strings.Split(strings.Replace(s, " ", "", -1), ",")
-
+	// fmt.Println(s_array)
 	for index, element := range s_array {
-		sb.WriteString(`"` + element + `"`)
-		if index != len(s_array)-1 {
-			sb.WriteString(`,`)
+		// sb.WriteString(`"` + element + `"`)
+		if len(element) > 0 {
+			sb.WriteString(element)
+			if index != len(s_array)-2 {
+				// fmt.Println(index, len(s_array)-2, element)
+				sb.WriteString(`,`)
+			}
 		}
 	}
 

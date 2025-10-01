@@ -6,8 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"es_upgrade/repository"
+	"es_upgrade/utility"
 
 	"github.com/elastic/go-elasticsearch/v7"
 )
@@ -49,12 +51,14 @@ func Get_es_indices(es *elasticsearch.Client) {
 
 		fmt.Print(string(prettyJSON))
 	*/
-
+	// In Go, the strings.Builder type is used for efficient string construction and concatenation
+	var sb strings.Builder
 	for _, rows := range response_map {
 		// fmt.Println(i, rows)
-		fmt.Printf("%s, ", rows.Index)
+		// fmt.Printf("%s, ", rows.Index)
+		sb.WriteString(fmt.Sprintf("%s,", rows.Index))
 	}
-
+	fmt.Print(utility.Build_split_string_array(sb.String()))
 	fmt.Printf("\n**\n")
 }
 
