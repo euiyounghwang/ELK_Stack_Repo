@@ -19,6 +19,45 @@ func Get_es_search(es *elasticsearch.Client) {
 	fmt.Printf("**\n")
 }
 
+func Get_es_indices(es *elasticsearch.Client) {
+	fmt.Printf("\n**\n")
+	fmt.Printf("List of Elasticsearch Indices with account: [%s]\n", os.Getenv("BASIC_AUTH_USERNAME"))
+
+	res, err := es.Cat.Indices(es.Cat.Indices.WithFormat("json"))
+	if err != nil {
+		return
+	}
+	defer res.Body.Close()
+
+	body, _ := ioutil.ReadAll(res.Body)
+
+	// fmt.Print(utility.PrettyString(string(body)))
+
+	response_map := repository.ES_Indices{}
+	if err := json.Unmarshal(body, &response_map); err != nil {
+		// do error check
+		log.Println(err)
+	}
+
+	/*
+		// Pretty-print the JSON
+		// Converts the Go data structure back into a JSON string with indentation for pretty-printing.
+		prettyJSON, err := json.MarshalIndent(response_map, "", "  ")
+		if err != nil {
+			log.Fatalf("Error pretty-printing JSON: %s", err)
+		}
+
+		fmt.Print(string(prettyJSON))
+	*/
+
+	for _, rows := range response_map {
+		// fmt.Println(i, rows)
+		fmt.Printf("%s, ", rows.Index)
+	}
+
+	fmt.Printf("\n**\n")
+}
+
 func Get_es_info(es *elasticsearch.Client) {
 	/*
 		// Ping the cluster to verify connection
@@ -29,6 +68,7 @@ func Get_es_info(es *elasticsearch.Client) {
 		defer res.Body.Close()
 	*/
 
+	// Constructs a request to the _cat/indices API, specifying that the response should be in JSON format.
 	res, err := es.Cluster.Health(es.Cluster.Health.WithPretty()) // WithPretty() for formatted output
 	if err != nil {
 		// Handle error
@@ -43,6 +83,7 @@ func Get_es_info(es *elasticsearch.Client) {
 	// fmt.Println(string(body))
 
 	response_map := repository.ES_Cluster{}
+	// Parses the JSON response into a Go slice of maps, where each map represents an index and its properties.
 	if err := json.Unmarshal(body, &response_map); err != nil {
 		// do error check
 		log.Println(err)
@@ -78,6 +119,7 @@ func Get_elasticsearch() *elasticsearch.Client {
 		CACert:   caCert,
 	}
 
+	// Creates a new Elasticsearch client.
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the client: %s", err)

@@ -37,3 +37,17 @@ type ES_Cluster struct {
 	TaskMaxWaitingInQueueMillis int     `json:"task_max_waiting_in_queue_millis"`
 	ActiveShardsPercentAsNumber float64 `json:"active_shards_percent_as_number"`
 }
+
+type ES_Indices []struct {
+	Health       string `json:"health"`
+	Status       string `json:"status"`
+	Index        string `json:"index"`
+	UUID         string `json:"uuid"`
+	Pri          string `json:"pri"`
+	Rep          string `json:"rep"`
+	DocsCount    string `json:"docs.count"`
+	DocsDeleted  string `json:"docs.deleted"`
+	StoreSize    string `json:"store.size"`
+	PriStoreSize string `json:"pri.store.size"`
+	DatasetSize  string `json:"dataset.size"`
+}

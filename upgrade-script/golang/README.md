@@ -24,6 +24,7 @@ If you’re starting a new project, create a new module by running the following
 - go mod tidy
 - go get github.com/elastic/go-elasticsearch/v7@latest
 - go get github.com/joho/godotenv
+- github.com/stretchr/testify/assert
 - go run main.go
 - go build
 - compile a go file/project on windows for Linux: `env GOOS=linux go build -o ./bin/prometheus` (Run this command `chmod 755 filname` after copying to linux server)

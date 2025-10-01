@@ -26,6 +26,10 @@ func main() {
 
 	// es info
 	es_instance.Get_es_info(es_client)
+
+	// es cat/indices
+	es_instance.Get_es_indices(es_client)
+
 	// es search
 	es_instance.Get_es_search(es_client)
 }
