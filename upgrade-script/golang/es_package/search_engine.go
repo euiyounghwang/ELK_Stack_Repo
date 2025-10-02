@@ -20,8 +20,23 @@ import (
 )
 
 func Get_es_search(es *elasticsearch.Client, index_name string) {
+	/*
+		# Key check
+		users := map[string]string{
+		    "bob": "New York",
+		    "lisa": "Japan",
+		    "marco": "Italy",
+		  }
+		city, ok := users["bob"]
+		if ok {
+		    fmt.Println("bob lives in", city)
+		} else {
+		    fmt.Println("bob is not in the map")
+		}
+	*/
+
 	fmt.Printf("\n**\n")
-	fmt.Printf("Get_es_search [%s]", os.Getenv("BASIC_AUTH_USERNAME"))
+	fmt.Printf("Get_es_search [%s]\n", os.Getenv("BASIC_AUTH_USERNAME"))
 	// fmt.Println(es.Info())
 
 	// Perform a search query
@@ -50,12 +65,19 @@ func Get_es_search(es *elasticsearch.Client, index_name string) {
 		log.Fatalf("Error parsing the response body: %s", err)
 	} else {
 		// Access hits, aggregations, etc. from the 'r' map
-		p.Printf("\nTotal hits: %v\n", r["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"])
-		for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
-			source := hit.(map[string]interface{})["_source"]
-			_id := hit.(map[string]interface{})["_id"]
-			// fmt.Printf(" - Source: %v\n", source)
-			fmt.Printf(" - _id: %s, source : %s\n", _id, source.(map[string]interface{})["ADDTS"])
+		if r != nil {
+			_, ok := r["hits"]
+			if ok {
+				p.Printf("\nTotal hits: %v\n", r["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"])
+				for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
+					source := hit.(map[string]interface{})["_source"]
+					_id := hit.(map[string]interface{})["_id"]
+					// fmt.Printf(" - Source: %v\n", source)
+					fmt.Printf(" - _id: %s, source : %s\n", _id, source.(map[string]interface{})["ADDTS"])
+				}
+			} else {
+				fmt.Println("No permission.")
+			}
 		}
 		// fmt.Println("No hits found.")
 	}
