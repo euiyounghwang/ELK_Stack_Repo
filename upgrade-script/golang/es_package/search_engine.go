@@ -1,6 +1,7 @@
 package es_package
 
 import (
+	"context"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
@@ -14,12 +15,51 @@ import (
 	"es_upgrade/utility"
 
 	"github.com/elastic/go-elasticsearch/v7"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
-func Get_es_search(es *elasticsearch.Client) {
+func Get_es_search(es *elasticsearch.Client, index_name string) {
 	fmt.Printf("\n**\n")
 	fmt.Printf("Get_es_search [%s]", os.Getenv("BASIC_AUTH_USERNAME"))
 	// fmt.Println(es.Info())
+
+	// Perform a search query
+	// Define a simple match_all query
+	var buf strings.Builder
+	buf.WriteString(`{"query":{"match_all":{}}}`)
+
+	// Perform the search
+	res, err := es.Search(
+		es.Search.WithContext(context.Background()),
+		es.Search.WithIndex(index_name),
+		es.Search.WithBody(strings.NewReader(buf.String())),
+		es.Search.WithTrackTotalHits(true), // Optional: to get total hits count
+		es.Search.WithPretty(),             // Optional: for pretty-printed JSON response
+	)
+
+	if err != nil {
+		log.Fatalf("Error getting response: %s", err)
+	}
+
+	p := message.NewPrinter(language.English)
+
+	// Decode the JSON response
+	var r map[string]interface{}
+	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
+		log.Fatalf("Error parsing the response body: %s", err)
+	} else {
+		// Access hits, aggregations, etc. from the 'r' map
+		p.Printf("\nTotal hits: %v\n", r["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"])
+		for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
+			source := hit.(map[string]interface{})["_source"]
+			_id := hit.(map[string]interface{})["_id"]
+			// fmt.Printf(" - Source: %v\n", source)
+			fmt.Printf(" - _id: %s, source : %s\n", _id, source.(map[string]interface{})["ADDTS"])
+		}
+		// fmt.Println("No hits found.")
+	}
+
 	fmt.Printf("**\n")
 }
 

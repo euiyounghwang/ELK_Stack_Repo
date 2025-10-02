@@ -35,5 +35,5 @@ func main() {
 	es_instance.Get_es_indices(es_client)
 
 	// es search
-	es_instance.Get_es_search(es_client)
+	es_instance.Get_es_search(es_client, "wx_loc")
 }
