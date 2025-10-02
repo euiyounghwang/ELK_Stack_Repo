@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	es_instance "es_upgrade/es_package"
 
@@ -23,6 +24,9 @@ func main() {
 	}
 
 	es_client := es_instance.Get_elasticsearch()
+
+	// es certificate info
+	es_instance.Get_certificate_info(os.Getenv("CERT_PATH"))
 
 	// es info
 	es_instance.Get_es_info(es_client)

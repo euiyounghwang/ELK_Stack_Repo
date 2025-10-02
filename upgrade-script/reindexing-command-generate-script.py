@@ -80,7 +80,10 @@ def work(es_source_host, es_target_host):
             for k in ranked_keys:
                 f.write(f"\n{source_host}\t{ranked_index[k].get('each_index')}\t{int(ranked_index[k].get('count')):,}")
 
-            
+            # print('\n')
+            # print('---')
+            # print(f'Length of ranked_keys - {len(ranked_keys)}')
+            # print('---')
 
     es_obj_s = Search(host=es_source_host)
     es_client = es_obj_s.get_es_instance()
@@ -100,7 +103,8 @@ def work(es_source_host, es_target_host):
             # print(each_mapping)
             for v in each_mapping.values():
                 ''' get the name of type'''
-                get_type = list(v.get("mappings").keys())[0]
+                if len(list(v.get("mappings").keys())) > 0:
+                    get_type = list(v.get("mappings").keys())[0]
             # print(get_type)
             res_count = es_client.count(index=each_index, body={'query': { 'match_all' : {}}})["count"]
 

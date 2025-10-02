@@ -1,7 +1,9 @@
 package es_package
 
 import (
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -21,13 +23,44 @@ func Get_es_search(es *elasticsearch.Client) {
 	fmt.Printf("**\n")
 }
 
+func Get_certificate_info(Cacert string) {
+	// Replace "path/to/your/certificate.pem" with the actual path to your PEM file
+	certPEMBlock, err := ioutil.ReadFile(Cacert)
+	if err != nil {
+		log.Fatalf("Failed to read certificate file: %v", err)
+	}
+
+	block, _ := pem.Decode(certPEMBlock)
+	if block == nil || block.Type != "CERTIFICATE" {
+		log.Fatal("Failed to decode PEM block containing certificate")
+	}
+
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		log.Fatalf("Failed to parse certificate: %v", err)
+	}
+
+	fmt.Println("Certificate Subject:")
+	fmt.Printf("cert.Issuer: %s\n", cert.Issuer)
+	fmt.Printf("cert.SerialNumber: %s\n", cert.SerialNumber)
+	fmt.Printf("Common Name (CN): %s\n", cert.Subject.CommonName)
+	fmt.Printf("Organization (O): %v\n", cert.Subject.Organization)
+	fmt.Printf("Organizational Unit (OU): %v\n", cert.Subject.OrganizationalUnit)
+	fmt.Printf("Country (C): %v\n", cert.Subject.Country)
+	fmt.Printf("State (ST): %v\n", cert.Subject.Province) // Note: Province is typically used for State
+	fmt.Printf("Locality (L): %v\n", cert.Subject.Locality)
+	fmt.Printf("Certificate Not Before (Issue Date): %s\n", cert.NotBefore.Format("2006-01-02 15:04:05"))
+	fmt.Printf("Certificate Not After (Expiration Date): %s\n", cert.NotAfter.Format("2006-01-02 15:04:05"))
+	fmt.Printf("\n")
+}
+
 func Get_es_indices(es *elasticsearch.Client) {
 	fmt.Printf("\n**\n")
 	fmt.Printf("List of Elasticsearch Indices with account: [%s]\n", os.Getenv("BASIC_AUTH_USERNAME"))
 
 	res, err := es.Cat.Indices(es.Cat.Indices.WithFormat("json"))
 	if err != nil {
-		return
+		log.Println(err)
 	}
 	defer res.Body.Close()
 
@@ -36,6 +69,7 @@ func Get_es_indices(es *elasticsearch.Client) {
 	// fmt.Print(utility.PrettyString(string(body)))
 
 	response_map := repository.ES_Indices{}
+	// log.Println(response_map)
 	if err := json.Unmarshal(body, &response_map); err != nil {
 		// do error check
 		log.Println(err)
@@ -54,7 +88,7 @@ func Get_es_indices(es *elasticsearch.Client) {
 	// In Go, the strings.Builder type is used for efficient string construction and concatenation
 	var sb strings.Builder
 	for _, rows := range response_map {
-		// fmt.Println(i, rows)
+		// fmt.Println(rows)
 		// fmt.Printf("%s, ", rows.Index)
 		sb.WriteString(fmt.Sprintf("%s,", rows.Index))
 	}
