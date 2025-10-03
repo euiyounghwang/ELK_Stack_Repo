@@ -10,11 +10,11 @@ Node.js is an open-source, cross-platform JavaScript runtime environment.
 
 ## NodeJS Setup
 - This command should display the installed Node.js version, confirming a successful installation.: `node -v`
-- This command should display the installed npm version.: `npm -v`
+- This command should display the installed npm(Node Package Manager) version.: `npm -v`
 (Optional) Initialize a Node.js Project:
 - Create a new directory for your project.
 - Navigate into that directory in your terminal.
-- Run the following command to initialize a new Node.js project: : `npm init`
+- Run the following command to initialize a new Node.js project: : `npm init` or `npm init -y`
 - (Optional) Install Packages: Once your project is initialized, you can install additional packages using npm. For example, to install Express.js: `npm install express`
 
 ## NodeJS Run
@@ -46,7 +46,6 @@ Hello, Node.js!
     author:                                                                                                                                     
     license: (ISC)                                                                                                                              
     About to write to C:\Users\euiyoung.hwang\Git_Workspace\ELK_Stack_Repo\upgrade-script\nodejs\package.json:
-
     {
     "name": "node_es_client",
     "version": "1.0.0",
@@ -68,3 +67,9 @@ Hello, Node.js!
     [dotenv@17.2.3] injecting env (7) from ..\csharp\esclient\.env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
     envInfo: This is a .env file
     ```
+    - npm install express
+    - node ./express.js
+    ```bash    
+    Example app listening on port 3000!
+    ```
+    - npm install @elastic/elasticsearch@7.17
