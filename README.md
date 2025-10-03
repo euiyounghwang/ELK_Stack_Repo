@@ -393,28 +393,22 @@ public class ElasticsearchConnection
 
         // Replace with the path to your CA certificate file (e.g., in PEM format)
         var caCertPath = @"C:\path\to\your\ca_certificate.pem"; 
+        // Load the CA certificate
+        var caCert = new X509Certificate2(caCertPath);
 
         // Create ConnectionSettings with basic authentication and CA certificate
         var settings = new ConnectionSettings(uri)
             .BasicAuthentication(username, password)
             .ServerCertificateValidationCallback((sender, certificate, chain, sslPolicyErrors) => 
             {
-                // Load the CA certificate
-                var caCert = new X509Certificate2(caCertPath);
-
-                // Build a chain for the server certificate
-                var certChain = new X509Chain();
-                certChain.Build(certificate as X509Certificate2);
-
-                // Check if the server certificate is issued by the trusted CA
-                foreach (var element in certChain.ChainElements)
+                // Distinguished name (DN) is a term that describes the identifying information in a certificate and is part of the certificate itself.
+                // Check if the certificate from the remote secure ES cluster is the expected CA 
+                if (certificate.Issuer == caCert.Subject)
                 {
-                    if (element.Certificate.Thumbprint == caCert.Thumbprint)
-                    {
-                        return true; // Certificate is trusted
-                    }
+                    Console.WriteLine($"caCert : [{caCert}]");
+                    return true;
                 }
-                return false; // Certificate is not trusted or validation failed
+                return false; // Reject if validation fails
             });
 
         // Create the Elasticsearch client
