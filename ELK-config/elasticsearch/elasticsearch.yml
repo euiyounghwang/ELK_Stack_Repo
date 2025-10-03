@@ -95,30 +95,37 @@ cluster.initial_master_nodes: ["supplychain-logging-es8-node#1", "supplychain-lo
 #action.destructive_requires_name: false
 #
 
-#Max Clause count
-indices.query.bool.max_clause_count: 50000
-
-searchguard.enterprise_modules_enabled: false
 
 ######## Start Search Guard Demo Configuration ########
 # WARNING: revise all the lines below before you go into production
-searchguard.ssl.transport.pemcert_filepath: esnode.pem
-searchguard.ssl.transport.pemkey_filepath: esnode-key.pem
-searchguard.ssl.transport.pemtrustedcas_filepath: root-ca.pem
+searchguard.ssl.transport.pemcert_filepath: certs/node-1.pem
+searchguard.ssl.transport.pemkey_filepath: certs/node-1.key
+searchguard.ssl.transport.pemkey_password: monitoring
+searchguard.ssl.transport.pemtrustedcas_filepath: certs/dev-es8-ca.pem
 searchguard.ssl.transport.enforce_hostname_verification: false
+searchguard.ssl.transport.resolve_hostname: false
 searchguard.ssl.http.enabled: true
-searchguard.ssl.http.pemcert_filepath: esnode.pem
-searchguard.ssl.http.pemkey_filepath: esnode-key.pem
-searchguard.ssl.http.pemtrustedcas_filepath: root-ca.pem
+searchguard.ssl.http.pemcert_filepath: certs/node-1.pem
+searchguard.ssl.http.pemkey_filepath: certs/node-1.key
+searchguard.ssl.http.pemkey_password: monitoring
+searchguard.ssl.http.pemtrustedcas_filepath: certs/dev-es8-ca.pem
 searchguard.allow_unsafe_democertificates: true
 searchguard.allow_default_init_sgindex: true
+searchguard.nodes_dn:
+- "CN=dev-elasticsearch-node-1-cert,OU=es,O=es,L=Seoul,C=KR,ST=Seoul"
+- "CN=dev-elasticsearch-node-2-cert,OU=es,O=es,L=Seoul,C=KR,ST=Seoul"
+- "CN=dev-elasticsearch-node-3-cert,OU=es,O=es,L=Seoul,C=KR,ST=Seoul"
 searchguard.authcz.admin_dn:
-  - CN=kirk,OU=client,O=client,L=test, C=de
+- "CN=dev-elasticsearch-admin-cert,OU=es,O=es,L=KR,C=KR,ST=KR"
 
 searchguard.audit.type: internal_elasticsearch
 searchguard.check_snapshot_restore_write_privileges: true
 searchguard.restapi.roles_enabled: ["SGS_ALL_ACCESS"]
 cluster.routing.allocation.disk.threshold_enabled: false
+xpack.security.enabled: false
+xpack.security.transport.ssl.enabled: false
+xpack.security.autoconfiguration.enabled: false
+xpack.monitoring.templates.enabled: false
 ######## End Search Guard Demo Configuration ########
 
 xpack.security.enabled: false
@@ -126,6 +133,10 @@ xpack.security.autoconfiguration.enabled: false
 xpack.monitoring.enabled: true
 xpack.ml.enabled: false
 xpack.watcher.enabled: false
+
+
+#Max Clause count
+indices.query.bool.max_clause_count: 50000
 
 #reindex.remote.whitelist: "otherhost:9200, another:9200, 127.0.10.*:9200, localhost:*
 reindex.remote.whitelist: "*:9200"
