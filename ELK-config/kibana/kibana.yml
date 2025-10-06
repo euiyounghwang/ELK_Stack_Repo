@@ -60,3 +60,9 @@ xpack.canvas.enabled: false
 xpack.observability.enabled: false
 xpack.reporting.capture.browser.chromium.disableSandbox: false
 
+# HTTP Security Header not detected
+server.securityResponseHeaders.strictTransportSecurity: "max-age=31536000; includeSubDomains"
+server.customResponseHeaders.X-Content-type-Options: nosniff
+server.customResponseHeaders.XFrameOptions: sameorigin
+server.customResponseHeaders.xXssProtection: 1
+server.securityResponseHeaders.referrerPolicy: strict-origin-when-cross-origin

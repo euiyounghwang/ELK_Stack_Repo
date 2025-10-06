@@ -13,3 +13,4 @@ upgrade-script/csharp/esclient/obj/
 upgrade-script/csharp/test/bin/
 upgrade-script/csharp/test/obj/
 upgrade-script/golang/output/
+upgrade-script/nodejs/node_modules/

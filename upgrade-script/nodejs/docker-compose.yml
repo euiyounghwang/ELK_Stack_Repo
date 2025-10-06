@@ -1,0 +1,28 @@
+version: '3'
+#docker-compose -f ./docker-compose.yml up or docker-compose up
+name: nodejs-service
+services:
+  fn-nodejs-basic-api:
+    image: fn-nodejs-basic-api:es
+    container_name: fn-nodejs-basic-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # target: runtime
+    ports:
+      - 4000:3000
+    # volumes:
+    #   - ./:/app/FN-Basic-Services
+    restart: unless-stopped
+    # environment:
+    #   - ES_HOST=http://host.docker.internal:9203
+    networks:
+      - bridge
+  
+volumes:
+  data:
+    driver: local
+    
+networks:
+  bridge:
+    driver: bridge
