@@ -13,12 +13,14 @@ const es_nodes_3 = process.env.ES_NODE_3;
 const caCertificate = process.env.CERT_PATH;
 const username = process.env.BASIC_AUTH_USERNAME;
 const password = process.env.BASIC_AUTH_PASSWORD;
+const indices_name = process.env.INDICES_NAME;
 
 console.log(`\nenvInfo: ${env_desc}`);
 console.log(`es_nodes_list: ${es_nodes_1},${es_nodes_2},${es_nodes_3}`);
 console.log(`ca_certificate_path: ${caCertificate}`);
 console.log(`username: ${username}`);
 console.log(`password: ${password}`);
+console.log(`indices_name: ${indices_name}`);
 
 // Read the CA certificate content
 const caCert = fs.readFileSync(caCertificate, 'utf8');
@@ -41,6 +43,62 @@ const client = new Client({
             // rejectUnauthorized: false, 
         },
 });
+
+
+async function getSearchDocuments(index_name) {
+  try {
+    const { body } = await client.search({
+      // index: 'your_index_name', // Replace with your index name
+      index: index_name,
+      body: {
+        query: {
+          // match: {
+          //   your_field_name: 'search_term' // Replace with your field and search term
+          // }
+          match_all: {
+
+          }
+        }
+      }
+    });
+
+    console.log('\n**')
+    console.log(`Get_es_search [${username}]`)
+    console.log('Search Results:', body.hits.hits);
+  } catch (error) {
+    console.error('Error during search:', error);
+  } finally {
+    console.log('**\n')
+  }
+}
+
+async function getAllIndices() {
+  try {
+    const response = await client.cat.indices({ format: 'json' });
+    // console.log('All Indices:', response);
+    // console.log('All Indices:', response.body);
+    // Parsing the information
+    console.log('\n**')
+    console.log(`List of Elasticsearch Indices with account: [${username}]`)
+    let sb = [];
+    for (const indexName in response.body) {
+      sb.push(`${response.body[indexName]['index']},`);
+      // if (Object.hasOwnProperty.call(response.body, indexName)) {
+      //   const indexInfo = response.body[indexName];
+      //   console.log(`\nIndex Name: ${indexName}`);
+      //   console.log(`  UUID: ${indexInfo.settings.index.uuid}`);
+      //   console.log(`  Number of Shards: ${indexInfo.settings.index.number_of_shards}`);
+      //   console.log(`  Number of Replicas: ${indexInfo.settings.index.number_of_replicas}`);
+      //   // You can access other properties like mappings, aliases, etc.
+      //   // console.log('  Mappings:', indexInfo.mappings);
+      // }
+    }
+    console.log(sb.join(''))
+    console.log('**\n')
+  } catch (error) {
+    console.error('Error retrieving indices:', error);
+  }
+}
 
 async function getCertificateInfo() {
   try 
@@ -124,3 +182,9 @@ getClusterConnect();
 
 // es info
 getClusterHealth();
+
+// es get all indices
+getAllIndices();
+
+// es search 
+getSearchDocuments(indices_name)
