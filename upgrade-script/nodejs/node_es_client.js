@@ -3,6 +3,7 @@ const { Client } = require('@elastic/elasticsearch');
 const fs = require('fs');
 const path = require('path');
 
+// load .env file from csharp proj
 require('dotenv').config({ path: '../csharp/esclient/.env' });
 
 const env_desc = process.env.envInfo;
@@ -40,6 +41,26 @@ const client = new Client({
             // rejectUnauthorized: false, 
         },
 });
+
+async function getCertificateInfo() {
+  try 
+    {
+      const crypto = require("crypto")
+      const cert = new crypto.X509Certificate(fs.readFileSync(caCertificate, 'utf8'))
+
+      // console.log(cert)
+      console.log("Certificate Subject:")
+      // console.log(`cert.Issuer: ${cert.issuer}`)
+      console.log(`cert.SerialNumber: ${cert.serialNumber}`)
+      console.log(`cert.subject: ${cert.subject}`)
+      console.log(`Certificate Not Before (Issue Date): ${cert.validFrom}`)
+      console.log(`Certificate Not After (Expiration Date): ${cert.validTo}`)
+    } catch (error) {
+        console.error('Error getting cluster health:', error);
+    } finally {
+        // await client.close(); // Close the client connection
+    }
+}
 
 // --- Main connection logic ---
 async function getClusterConnect() {
@@ -95,5 +116,11 @@ async function getClusterHealth() {
     }
 }
 
+// es certificate info
+getCertificateInfo();
+
+// es connection
 getClusterConnect();
+
+// es info
 getClusterHealth();
