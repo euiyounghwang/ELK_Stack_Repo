@@ -217,6 +217,15 @@ func Get_elasticsearch() *elasticsearch.Client {
 		Username: os.Getenv("BASIC_AUTH_USERNAME"),
 		Password: os.Getenv("BASIC_AUTH_PASSWORD"),
 		CACert:   caCert,
+		// Transport: &http.Transport{
+		// 	MaxIdleConnsPerHost:   10,
+		// 	ResponseHeaderTimeout: time.Second,
+		// 	DialContext:           (&net.Dialer{Timeout: time.Second}).DialContext,
+		// 	TLSClientConfig: &tls.Config{
+		// 		MinVersion:         tls.VersionTLS12,
+		// 		InsecureSkipVerify: true,
+		// 	},
+		// },
 	}
 
 	// Creates a new Elasticsearch client.
