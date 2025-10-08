@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"es_upgrade/repository"
 	"es_upgrade/utility"
@@ -102,6 +103,17 @@ func Get_certificate_info(Cacert string) {
 		log.Fatalf("Failed to parse certificate: %v", err)
 	}
 
+	// Load the New York timezone
+	// newYorkLocation, err := time.LoadLocation("America/New_York")
+	newYorkLocation, err := time.LoadLocation("America/Chicago")
+	if err != nil {
+		log.Fatalf("failed to load New York timezone: %v", err)
+	}
+
+	// Convert the UTC expiration time to New York time
+	cert_not_before := cert.NotBefore.In(newYorkLocation)
+	cert_not_after := cert.NotAfter.In(newYorkLocation)
+
 	fmt.Println("Certificate Subject:")
 	fmt.Printf("cert.Issuer: %s\n", cert.Issuer)
 	fmt.Printf("cert.SerialNumber: %s\n", cert.SerialNumber)
@@ -111,8 +123,8 @@ func Get_certificate_info(Cacert string) {
 	fmt.Printf("Country (C): %v\n", cert.Subject.Country)
 	fmt.Printf("State (ST): %v\n", cert.Subject.Province) // Note: Province is typically used for State
 	fmt.Printf("Locality (L): %v\n", cert.Subject.Locality)
-	fmt.Printf("Certificate Not Before (Issue Date): %s\n", cert.NotBefore.Format("2006-01-02 15:04:05"))
-	fmt.Printf("Certificate Not After (Expiration Date): %s\n", cert.NotAfter.Format("2006-01-02 15:04:05"))
+	fmt.Printf("Certificate Not Before (Issue Date): %s\n", cert_not_before.Format("2006-01-02 15:04:05"))
+	fmt.Printf("Certificate Not After (Expiration Date): %s\n", cert_not_after.Format("2006-01-02 15:04:05"))
 	fmt.Printf("\n")
 }
 
