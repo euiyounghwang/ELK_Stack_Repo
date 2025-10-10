@@ -184,6 +184,7 @@ func Get_es_info(es *elasticsearch.Client) {
 	res, err := es.Cluster.Health(es.Cluster.Health.WithPretty()) // WithPretty() for formatted output
 	if err != nil {
 		// Handle error
+		log.Println(err)
 	}
 	defer res.Body.Close()
 
