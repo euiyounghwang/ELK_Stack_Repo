@@ -82,7 +82,7 @@ bootstrap.memory_lock: true
   - sudo netstat -nlp | grep :5601 
   
 
-## Logstash (Logstash v8.17.0 with Search Guard)
+## Logstash (Logstash v5)
 - Logstash is an open-source data processing pipeline that collects data from various sources, transforms it on the fly, and sends it to a desired destination. As part of the Elastic Stack (formerly ELK stack), it functions as an ETL (Extract, Transform, Load) tool, using a pipeline of input, filter, and output plugins to ingest, structure, and ship logs and events for analysis and visualization in Elasticsearch and Kibana.  
 - __Installation Commands__
   - sudo groupadd logstash
