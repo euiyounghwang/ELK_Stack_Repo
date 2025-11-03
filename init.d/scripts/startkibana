@@ -16,7 +16,8 @@ then
   #kill -9 $PID
 else
   echo "Starting the Kibana.."
-  nohup /apps/kibana/latest/bin/kibana &> /dev/null &
+  sudo su - kibana -c "nohup /apps/kibana/latest/bin/kibana  &> /dev/null &"
+  #nohup /apps/kibana/latest/bin/kibana &> /dev/null &
   #/apps/kibana/latest/bin/kibana
   sleep 5
   PID=$(ps -ef | grep $service_name | grep -v grep | tr -s ' ' | cut -d " " -f2)
