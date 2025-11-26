@@ -221,7 +221,11 @@ class Search():
         self.target_idx = _index
         
         try:
-            
+            ''' 
+            When encountering the error "Remote responded with a chunk that was too large. Use a smaller batch size" during an Elasticsearch reindex operation, 
+            it indicates that the default batch size for reindexing is too large for the documents being processed, especially when reindexing from a remote cluster. 
+            To address this, you need to explicitly set a smaller size parameter within the source object of your _reindex API cal
+            '''
             for each_raw in raw_json:
 
                 ''' ES v.5 header'''
