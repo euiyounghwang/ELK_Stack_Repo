@@ -97,8 +97,9 @@ def work(es_source_host, es_target_host):
 
     ranked_index = {}
     for each_index in source_idx_lists:
-        # if str(each_index).startswith("om") or str(each_index).startswith("wx") or str(each_index).startswith("es") or str(each_index).startswith("archive"):
-        if str(each_index).startswith("om") or str(each_index).startswith("wx"):
+        if str(each_index).startswith("om") or str(each_index).startswith("wx") or str(each_index).startswith("es") or str(each_index).startswith("archive"):
+        # if str(each_index).startswith("om") or str(each_index).startswith("wx"):
+        # if str(each_index).startswith("om"):
             each_mapping = es_client.indices.get_mapping(index=each_index)
             # print(each_mapping)
             for v in each_mapping.values():
