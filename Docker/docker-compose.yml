@@ -77,6 +77,7 @@ services:
   fn-es8:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
     container_name: fn-es8
+    restart: always
     environment:
       - http.host=0.0.0.0
       - node.name=fn-dm-bees-omni-data-01
@@ -103,6 +104,7 @@ services:
   fn-kibana8:
     image: docker.elastic.co/kibana/kibana:8.8.0
     container_name: fn-kibana8
+    restart: always
     environment:
      ELASTICSEARCH_HOSTS: http://fn-es8:9202
      SERVER_HOSTS: 0.0.0.0
@@ -116,6 +118,7 @@ services:
   fn-es:
     image: fn-es:omni_es
     container_name: fn-es
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
@@ -171,6 +174,7 @@ services:
   fn-kibana:
     image: docker.elastic.co/kibana/kibana:5.6.4
     container_name: fn-kibana
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
