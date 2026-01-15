@@ -147,12 +147,13 @@ es = Elasticsearch(hosts="{}".format("localhost"), headers=get_headers('test'), 
 # bulk #1
 # bulk_memory = [
 #     {
-#         "_op_type": "index", 
-#         "_index" : "test", 
-#         # "_type" : "WX_ORDER", 
-#         "_id" : "{}|{}|{}".format(pd_dataframe_dict.get("JSON")[0].get("ORDERKEY"), pd_dataframe_dict.get("JSON")[0].get("SITEID"), KEY_DB),
-#         "_source": pd_dataframe_dict.get("JSON")[0]
-#     })
+#          "index" : {
+#             "_index" : "test", 
+#             # "_type" : "WX_ORDER", 
+#             "_id" : "{}|{}|{}".format(pd_dataframe_dict.get("JSON")[0].get("ORDERKEY"), pd_dataframe_dict.get("JSON")[0].get("SITEID"), KEY_DB)
+        
+#     }}),
+#     pd_dataframe_dict.get("JSON")[0]
 # ]
 
 # bulk #2
@@ -167,6 +168,7 @@ try:
 
     # bulk #1
     # response = es.bulk(body=bulk_memory)
+     # print(f"Successfully indexed: {response['items']}, Errors: {response['errors']}")
 
     # bulk #2
     success, errors = bulk(es, bulk_memory)
