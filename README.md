@@ -138,6 +138,43 @@ POST _bulk
 { "doc" : {"field2" : "value2"} }
 
 GET test/search
+
+from elasticsearch import Elasticsearch
+
+# es = Elasticsearch([{'host': 'localhost', 'port': 9200, 'scheme': 'http'}])
+es = Elasticsearch(hosts="{}".format("localhost"), headers=get_headers('test'), timeout=5,  verify_certs=False)
+
+# bulk #1
+# bulk_memory = [
+#     {
+#         "_op_type": "index", 
+#         "_index" : "test", 
+#         # "_type" : "WX_ORDER", 
+#         "_id" : "{}|{}|{}".format(pd_dataframe_dict.get("JSON")[0].get("ORDERKEY"), pd_dataframe_dict.get("JSON")[0].get("SITEID"), KEY_DB),
+#         "_source": pd_dataframe_dict.get("JSON")[0]
+#     })
+# ]
+
+# bulk #2
+# bulk_memory = [
+#     {"_op_type": "index", "_index": "my-index", "_id": "1", "_source": {"field1": "value1"}},
+#     {"_op_type": "index", "_index": "my-index", "_id": "2", "_source": {"field1": "value2"}},
+#     {"_op_type": "delete", "_index": "my-index", "_id": "3"}
+# ]
+
+try:
+    from elasticsearch.helpers import bulk
+
+    # bulk #1
+    # response = es.bulk(body=bulk_memory)
+
+    # bulk #2
+    success, errors = bulk(es, bulk_memory)
+    print(f"Successfully indexed: {success}, Errors: {errors}")
+    
+except Exception as e:
+    print(f"Bulk indexing error: {e}")
+
 ```
 
 #### Python V3.9 Install
