@@ -12,15 +12,16 @@ test=$?
 if [ $test -eq 0 ]
 then
   PID=$(ps -ef | grep $service_name | grep -v grep | tr -s ' ' | cut -d " " -f2)
-  echo Kibana is Running as PID: $PID
+  echo Kibana is Running as $PID
   #kill -9 $PID
 else
-  echo "Starting the Kibana.."
-  sudo su - kibana -c "nohup /apps/kibana/latest/bin/kibana  &> /dev/null &"
+  cd /apps/kibana
+  echo "Started the Kibana.."
+  #su - kibana -c "nohup /apps/kibana/latest/bin/kibana  &> /dev/null &"
   #nohup /apps/kibana/latest/bin/kibana &> /dev/null &
+  nohup /apps/kibana/latest/bin/kibana > /dev/null 2>&1 &
   #/apps/kibana/latest/bin/kibana
-  sleep 5
-  PID=$(ps -ef | grep $service_name | grep -v grep | tr -s ' ' | cut -d " " -f2)
-  echo Kibana is running as PID: $PID
+  #sleep 5
+  #PID=$(ps -ef | grep $service_name | grep -v grep | tr -s ' ' | cut -d " " -f2)
+  #echo Kibana is running as $PID
 fi
-
